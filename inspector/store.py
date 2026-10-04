@@ -43,6 +43,7 @@ inspections = Table(
     Column("verdict", String(40)),
     Column("score", Integer),
     Column("counts", Text),
+    Column("framework", Text),
     Column("report", Text),
     Column("report_md", Text),
     Column("guidelines_md", Text),
@@ -61,6 +62,10 @@ def engine():
         if _engine is None:
             _engine = create_engine(db_url(), future=True, connect_args={"check_same_thread": False})
             _meta.create_all(_engine)
+            with _engine.begin() as c:                 # columns added after the first release
+                cols = {r[1] for r in c.exec_driver_sql("PRAGMA table_info(inspections)")}
+                if "framework" not in cols:
+                    c.exec_driver_sql("ALTER TABLE inspections ADD COLUMN framework TEXT")
     return _engine
 
 
@@ -73,8 +78,9 @@ def _row(r) -> Dict[str, Any]:
     for k in ("started_at", "finished_at", "created_at"):
         if d.get(k):
             d[k] = d[k].isoformat()
-    if d.get("counts"):
-        d["counts"] = json.loads(d["counts"])
+    for k in ("counts", "framework"):
+        if d.get(k):
+            d[k] = json.loads(d[k])
     return d
 
 
@@ -133,7 +139,8 @@ def finish_inspection(iid: int, report: Dict[str, Any], report_md: str, guidelin
     with engine().begin() as c:
         c.execute(update(inspections).where(inspections.c.id == iid).values(
             status="done", commit=report.get("commit"), verdict=report["verdict"], score=report["score"],
-            counts=json.dumps(report["counts"]), report=json.dumps(report), report_md=report_md,
+            counts=json.dumps(report["counts"]), framework=json.dumps(report.get("framework") or {}),
+            report=json.dumps(report), report_md=report_md,
             guidelines_md=guidelines_md, finished_at=now()))
 
 
@@ -144,7 +151,7 @@ def fail_inspection(iid: int, error: str) -> None:
 
 
 _SUMMARY = [inspections.c[k] for k in ("id", "app_id", "source", "trigger", "requested_by", "status", "commit",
-                                       "verdict", "score", "counts", "error", "started_at", "finished_at")]
+                                       "verdict", "score", "counts", "framework", "error", "started_at", "finished_at")]
 
 
 def list_inspections(limit: int = 100, app_id: Optional[int] = None) -> List[Dict[str, Any]]:

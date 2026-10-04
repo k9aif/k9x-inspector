@@ -29,11 +29,16 @@
            animation: float 9s ease-in-out infinite; pointer-events: none; }
   .panel h3 { margin: 0 0 8px; font: 600 9.5px/1 Inter, sans-serif; letter-spacing: .16em; color: #cfe3ff; text-transform: uppercase; }
   @keyframes float { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-8px) } }
-  .p-arch  { top: 6vh;  left: 3vw;  width: 250px; animation-delay: -2s; }
-  .p-check { top: 6vh;  right: 3vw; width: 215px; animation-delay: -5s; }
-  .p-code  { bottom: 7vh; left: 3vw; width: 400px; animation-delay: -1s; }
-  .p-score { bottom: 8vh; right: 3vw; width: 180px; animation-delay: -4s; text-align: center; }
-  .p-gov   { bottom: 2.5vh; left: 50%; width: 460px; margin-left: -230px; animation-delay: -6s; }
+  /* left column: every panel stacked; the score sits alone bottom-right */
+  .stack { position: fixed; z-index: 1; left: 2.5vw; top: 3vh; bottom: 3vh; width: 410px;
+           display: flex; flex-direction: column; justify-content: center; gap: 12px; pointer-events: none; }
+  .stack .panel { position: relative; }
+  .p-arch  { animation-delay: -2s; }
+  .p-check { animation-delay: -5s; }
+  .p-code  { animation-delay: -1s; }
+  .p-gov   { animation-delay: -6s; }
+  .p-score { position: fixed; bottom: 6vh; right: 3vw; width: 180px; animation-delay: -4s; text-align: center; }
+  .check ul { columns: 2; column-gap: 18px; }
   .flow { display: flex; flex-direction: column; gap: 5px; font: 500 9.5px/1 Inter, sans-serif; }
   .flow .row { display: flex; align-items: center; gap: 6px; }
   .box { border: 1px solid rgba(147,197,253,.55); border-radius: 5px; padding: 5px 7px; color: #dbeafe; background: rgba(30,64,120,.35); white-space: nowrap; }
@@ -82,8 +87,9 @@
   .demo small { display: block; color: var(--mute); margin-top: 3px; }
   .foot { margin-top: 14px; font-size: 12px; color: var(--mute); text-align: center; }
   .foot a { color: #93c5fd; text-decoration: none; }
-  @media (max-width: 1180px), (max-height: 860px) { .p-gov { display: none; } }
-  @media (max-width: 1180px) { .p-code { display: none; } }
+  @media (max-height: 900px) { .p-gov { display: none; } }
+  @media (max-height: 720px) { .p-code { display: none; } }
+  @media (max-width: 1250px) { .stack { display: none; } }
   @media (max-width: 900px) { .panel { display: none; } }
 </style>
 </head>
@@ -91,6 +97,13 @@
 <canvas id="bg"></canvas>
 <div class="grid"></div>
 
+
+
+
+
+
+
+<div class="stack">
 <div class="panel p-arch" aria-hidden="true">
   <h3>Solution architecture</h3>
   <div class="flow">
@@ -99,7 +112,6 @@
     <div class="row"><span class="box">Shield</span><span class="arr">⇄</span><span class="box">Guardian</span><span class="arr">⇄</span><span class="box">K9X HIL</span></div>
   </div>
 </div>
-
 <div class="panel p-check check" aria-hidden="true">
   <h3>Conformance checklist</h3>
   <ul>
@@ -111,7 +123,6 @@
     <li>Secrets in .env <b>✓</b></li>
   </ul>
 </div>
-
 <div class="panel p-code" aria-hidden="true">
   <h3>Code analysis</h3>
 <pre><span class="n">1</span> <span class="k">class</span> <span class="f">ClaimsAgent</span>(BaseAgent):
@@ -123,6 +134,21 @@
 <span class="n">7</span>         <span class="k">except</span> RuntimeError <span class="k">as</span> exc:
 <span class="n">8</span>             <span class="k">return</span> {<span class="s">"status"</span>: <span class="s">"failed"</span>, <span class="s">"reason"</span>: str(exc)}
 <span class="n">9</span>         <span class="k">return</span> {<span class="s">"output"</span>: resp}</pre>
+</div>
+<div class="panel p-gov" aria-hidden="true">
+  <h3>Framework controls inspected</h3>
+  <div class="chain">
+    <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h7"/></svg></div>Contracts<small>ABB / SBB</small></div>
+    <span class="arr">→</span>
+    <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg></div>Govern<small>Shield + Guardian</small></div>
+    <span class="arr">→</span>
+    <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></div>Zero Trust<small>identity + policy</small></div>
+    <span class="arr">→</span>
+    <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg></div>Inspect<small>every push</small></div>
+    <span class="arr">→</span>
+    <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h4"/></svg></div>Guide<small>generated docs</small></div>
+  </div>
+</div>
 </div>
 
 <div class="panel p-score" aria-hidden="true">
@@ -138,20 +164,7 @@
   <div class="score-l">Compliant</div>
 </div>
 
-<div class="panel p-gov" aria-hidden="true">
-  <h3>Framework controls inspected</h3>
-  <div class="chain">
-    <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h7"/></svg></div>Contracts<small>ABB / SBB</small></div>
-    <span class="arr">→</span>
-    <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg></div>Govern<small>Shield + Guardian</small></div>
-    <span class="arr">→</span>
-    <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></div>Zero Trust<small>identity + policy</small></div>
-    <span class="arr">→</span>
-    <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg></div>Inspect<small>every push</small></div>
-    <span class="arr">→</span>
-    <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h4"/></svg></div>Guide<small>generated docs</small></div>
-  </div>
-</div>
+
 
 <main>
   <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">

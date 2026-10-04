@@ -91,7 +91,7 @@
       </form>
       <div class="msg" id="addmsg"></div>
     </div>
-    <div class="wrap"><table id="apps"><thead><tr><th>Application</th><th>Repository</th><th>Latest inspection</th><th>Verdict</th><th>Score</th><th>Findings</th><th></th></tr></thead><tbody></tbody></table></div>
+    <div class="wrap"><table id="apps"><thead><tr><th>Application</th><th>Repository</th><th>k9-aif</th><th>Latest inspection</th><th>Verdict</th><th>Score</th><th>Findings</th><th></th></tr></thead><tbody></tbody></table></div>
     <p class="sub">Tracked applications come from <code>INSPECTOR_APPS</code> in .env (and any the admin adds here). Each is re-inspected on every push (GitHub webhook) and on the schedule when its branch has moved.</p>
   </section>
 
@@ -153,6 +153,11 @@ async function api(path, opt = {}) {
 }
 const when = t => t ? new Date(t).toLocaleString() : '';
 const cnt = c => c ? `<span class="sev critical">${c.critical}</span> <span class="sev violation">${c.violation}</span> <span class="sev warning">${c.warning}</span> <span class="sev recommendation">${c.recommendation}</span>` : '';
+const FW_TEXT = {current: 'up to date', outdated: 'update to latest', 'floor-behind': 'raise minimum', unpinned: 'no version', undeclared: 'not declared'};
+const FW_COLOR = {current: 'var(--ok)', outdated: 'var(--crit)', 'floor-behind': 'var(--warn)', unpinned: 'var(--warn)', undeclared: 'var(--warn)'};
+const fwCell = fw => !fw || !fw.status ? '<span class="muted">—</span>' :
+  `<span class="mono">${esc((fw.declared || '').replace(/^["']|["',]+$/g, '') || '—')}</span>
+   <div style="color:${FW_COLOR[fw.status]};font-size:12px;font-weight:600">${FW_TEXT[fw.status] || esc(fw.status)}${fw.latest ? ' · latest ' + esc(fw.latest) : ''}</div>`;
 const verdict = v => v ? `<span class="verdict ${esc(v.split(' ')[0])} ${v.includes('WITH') ? 'WITH' : ''}">${esc(v)}</span>` : '';
 
 // ── tabs ──
@@ -171,7 +176,7 @@ async function header() {
   $('#addapp').hidden = ME.role !== 'admin';
   $('#ipl').hidden = !ME.allow_local;
   const s = await api('/api/status');
-  $('#sched').innerHTML = `Schedule <b>${esc(s.schedule)}</b>${s.next_schedule ? ' · next ' + new Date(s.next_schedule * 1000).toLocaleTimeString() : ''} · webhook <b>${s.webhook ? 'on' : 'off'}</b>${s.current ? ' · running #' + s.current : ''}${s.queued ? ' · ' + s.queued + ' queued' : ''}`;
+  $('#sched').innerHTML = `Schedule <b>${esc(s.schedule)}</b>${s.next_schedule ? ' · next ' + new Date(s.next_schedule * 1000).toLocaleTimeString() : ''} · webhook <b>${s.webhook ? 'on' : 'off'}</b>${s.latest_framework ? ' · k9-aif latest <b>' + esc(s.latest_framework) + '</b>' : ''}${s.current ? ' · running #' + s.current : ''}${s.queued ? ' · ' + s.queued + ' queued' : ''}`;
 }
 $('#out').onclick = async () => { await fetch('/api/logout', {method: 'POST'}); location.replace('/login'); };
 
@@ -182,10 +187,11 @@ async function loadApps() {
     const l = a.latest || {};
     return `<tr><td><b>${esc(a.name)}</b><div class="sub">${a.origin === 'env' ? '.env' : 'added in UI'}</div></td>
       <td class="mono"><a href="${esc(a.repo)}" target="_blank" rel="noopener">${esc(a.repo.replace('https://github.com/', ''))}</a><div class="sub">${esc(a.branch)}${a.subdir ? ' · ' + esc(a.subdir) : ''}</div></td>
+      <td>${fwCell(l.framework)}</td>
       <td>${l.id ? `<a href="#" data-r="${l.id}">#${l.id}</a> <span class="status-${l.status}">${l.status}</span><div class="sub">${esc(l.trigger)} · ${when(l.started_at)}</div>` : '<span class="muted">not yet</span>'}</td>
       <td>${verdict(l.verdict)}</td><td>${l.score ?? ''}${l.score != null ? '%' : ''}</td><td>${cnt(l.counts)}</td>
       <td><button data-i="${a.id}">Inspect now</button>${ME?.role === 'admin' && a.origin !== 'env' ? ` <button data-d="${a.id}">Remove</button>` : ''}</td></tr>`;
-  }).join('') || '<tr><td colspan="7" class="muted">No applications tracked yet.</td></tr>';
+  }).join('') || '<tr><td colspan="8" class="muted">No applications tracked yet.</td></tr>';
   $('#apps').querySelectorAll('[data-i]').forEach(b => b.onclick = async () => {
     b.disabled = true; try { const r = await api(`/api/apps/${b.dataset.i}/inspect`, {method: 'POST'}); follow(r.id); } catch (e) { alert(e.message); } });
   $('#apps').querySelectorAll('[data-d]').forEach(b => b.onclick = async () => {
@@ -249,6 +255,7 @@ function renderReport(d, target) {
         <div class="card stat"><div class="k">Warnings</div><div class="v" style="color:var(--warn)">${r.counts.warning}</div></div>
         <div class="card stat"><div class="k">Recommendations</div><div class="v" style="color:var(--reco)">${r.counts.recommendation}</div></div>
         <div class="card stat"><div class="k">Files</div><div class="v">${r.files.python}</div><div class="sub">Python · ${r.files.yaml} YAML</div></div>
+        <div class="card stat"><div class="k">k9-aif</div><div style="margin-top:4px">${fwCell(r.framework)}</div>${r.framework && r.framework.file ? `<div class="sub mono">${esc(r.framework.file)}:${r.framework.line}</div>` : ''}</div>
       </div>
       <div class="filters">${['all', 'critical', 'violation', 'warning', 'recommendation'].map(s => `<button data-f="${s}" class="${s === filt ? 'on' : ''}">${s}</button>`).join('')}</div>
       <div class="wrap"><table><thead><tr><th>Severity</th><th>Rule</th><th>Where</th><th>Finding</th></tr></thead><tbody>

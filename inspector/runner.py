@@ -27,6 +27,27 @@ from inspector.settings import allow_local, schedule
 
 log = logging.getLogger(__name__)
 
+_latest: Dict[str, Any] = {"at": 0.0, "version": ""}
+
+
+def latest_framework() -> str:
+    """Latest k9-aif on PyPI (cached 6 h); the installed version if PyPI cannot be reached."""
+    import json as _json
+    import urllib.request
+    if time.time() - _latest["at"] < 6 * 3600 and _latest["version"]:
+        return _latest["version"]
+    try:
+        with urllib.request.urlopen("https://pypi.org/pypi/k9-aif/json", timeout=8) as r:
+            _latest.update(version=_json.loads(r.read())["info"]["version"], at=time.time())
+    except Exception:
+        try:
+            from importlib.metadata import version
+            _latest.update(version=version("k9-aif"), at=time.time())
+        except Exception:
+            pass
+    return _latest["version"]
+
+
 _queue: "queue.Queue[Dict[str, Any]]" = queue.Queue()
 STATE: Dict[str, Any] = {"current": None, "last_schedule": None, "next_schedule": None}
 _worker_started = threading.Event()
@@ -77,7 +98,7 @@ def _run(job: Dict[str, Any]) -> None:
             folder, commit = repos.checkout(spec["repo"], spec["branch"], spec.get("subdir", ""))
             source = spec["repo"] + (f"/tree/{spec['branch']}/{spec['subdir']}" if spec.get("subdir") else "")
             name = job["app"]["name"] if "app" in job else spec["repo"].rstrip("/").split("/")[-1]
-        report = K9Inspector().inspect(folder, source=source)
+        report = K9Inspector(config={"latest_version": latest_framework()}).inspect(folder, source=source)
         if commit:
             report.commit = commit[:12]
         data = report.to_dict()

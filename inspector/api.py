@@ -114,7 +114,7 @@ def me(user: str = Depends(login)):
 def status(user: str = Depends(login)):
     return {"current": runner.STATE["current"], "queued": runner.queued(), "schedule": schedule(),
             "next_schedule": runner.STATE["next_schedule"], "last_schedule": runner.STATE["last_schedule"],
-            "webhook": bool(webhook_secret())}
+            "webhook": bool(webhook_secret()), "latest_framework": runner.latest_framework()}
 
 
 @app.get("/api/apps")
