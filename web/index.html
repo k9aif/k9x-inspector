@@ -41,6 +41,9 @@
   .sev { font-size: 11.5px; font-weight: 700; padding: 2px 8px; border-radius: 10px; color: #fff; text-transform: uppercase; white-space: nowrap; }
   .sev.critical { background: var(--crit); } .sev.violation { background: var(--viol); }
   .sev.warning { background: var(--warn); } .sev.recommendation { background: var(--reco); }
+  .badges { white-space: nowrap; }
+  .legend { margin: 10px 0 6px; font-size: 12px; color: var(--mute); line-height: 2; }
+  .legend .sev { font-size: 10.5px; padding: 1px 7px; }
   .verdict { font-weight: 700; } .verdict.NON-COMPLIANT { color: var(--crit); }
   .verdict.COMPLIANT { color: var(--ok); } .verdict.WITH { color: var(--warn); }
   code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
@@ -94,6 +97,10 @@
       <div class="msg" id="addmsg"></div>
     </div>
     <div class="wrap"><table id="apps"><thead><tr><th>Application</th><th>Repository</th><th>k9-aif</th><th>Latest inspection</th><th>Verdict</th><th>Score</th><th>Findings</th><th></th></tr></thead><tbody></tbody></table></div>
+    <div class="legend"><span class="sev critical">critical</span> a governance or security control is bypassed, or a secret is exposed
+  · <span class="sev violation">violation</span> breaks a framework contract or rule — fix before production
+  · <span class="sev warning">warning</span> degrades reliability or governance — fix soon
+  · <span class="sev recommendation">recommendation</span> a better framework practice exists</div>
     <p class="sub">Tracked applications come from <code>INSPECTOR_APPS</code> in .env (and any the admin adds here). Each is re-inspected on every push (GitHub webhook) and on the schedule when its branch has moved.</p>
   </section>
 
@@ -114,6 +121,10 @@
 
   <section id="t-reports" hidden>
     <div class="wrap"><table id="hist"><thead><tr><th>#</th><th>Source</th><th>Trigger</th><th>Commit</th><th>Status</th><th>Verdict</th><th>Score</th><th>Findings</th><th>Started</th></tr></thead><tbody></tbody></table></div>
+    <div class="legend"><span class="sev critical">critical</span> a governance or security control is bypassed, or a secret is exposed
+  · <span class="sev violation">violation</span> breaks a framework contract or rule — fix before production
+  · <span class="sev warning">warning</span> degrades reliability or governance — fix soon
+  · <span class="sev recommendation">recommendation</span> a better framework practice exists</div>
     <div id="report"></div>
   </section>
 
@@ -154,7 +165,7 @@ async function api(path, opt = {}) {
   return body;
 }
 const when = t => t ? new Date(t).toLocaleString() : '';
-const cnt = c => c ? `<span class="sev critical">${c.critical}</span> <span class="sev violation">${c.violation}</span> <span class="sev warning">${c.warning}</span> <span class="sev recommendation">${c.recommendation}</span>` : '';
+const cnt = c => c ? `<span class="badges"><span class="sev critical" title="${c.critical} critical">${c.critical}</span> <span class="sev violation" title="${c.violation} violations">${c.violation}</span> <span class="sev warning" title="${c.warning} warnings">${c.warning}</span> <span class="sev recommendation" title="${c.recommendation} recommendations">${c.recommendation}</span></span>` : '';
 const FW_TEXT = {bundled: 'ships with the framework', current: 'up to date', outdated: 'update to latest', 'floor-behind': 'raise minimum', unpinned: 'no version', undeclared: 'not declared'};
 const FW_COLOR = {bundled: 'var(--ok)', current: 'var(--ok)', outdated: 'var(--crit)', 'floor-behind': 'var(--warn)', unpinned: 'var(--warn)', undeclared: 'var(--warn)'};
 const fwCell = fw => !fw || !fw.status ? '<span class="muted">—</span>' :
