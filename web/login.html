@@ -7,213 +7,241 @@
 <link rel="icon" href="/static/logo.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root { color-scheme: dark; --cyan:#38bdf8; --blue:#3b82f6; --teal:#22d3ee; --ink:#e6f0ff; --mute:#8fa3c4;
-          --glass:rgba(10,26,52,.55); --edge:rgba(96,165,250,.35); --ok:#34d399; }
+  :root { color-scheme: dark; --cyan:#38bdf8; --ink:#e6f2ff; --mute:#8ea6c8;
+          --glass:rgba(6,26,54,.58); --edge:rgba(56,189,248,.42); --ok:#34d399; }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
   body { margin: 0; color: var(--ink); overflow-x: hidden; font: 14px/1.5 Inter, system-ui, sans-serif;
-         background: radial-gradient(1200px 700px at 70% 30%, #0b2a55 0%, #061633 45%, #030a1a 100%); }
+         background: radial-gradient(900px 700px at 18% 45%, #0a2a57 0%, transparent 60%),
+                     radial-gradient(1100px 800px at 78% 40%, #0b2450 0%, #04112a 55%, #020814 100%); }
+  /* static background layer: bokeh + data columns, drawn once */
   canvas#bg { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
-  .grid { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .5;
-          background-image: linear-gradient(rgba(56,189,248,.07) 1px, transparent 1px),
-                            linear-gradient(90deg, rgba(56,189,248,.07) 1px, transparent 1px);
-          background-size: 44px 44px; mask-image: radial-gradient(ellipse at center, #000 30%, transparent 80%);
-          -webkit-mask-image: radial-gradient(ellipse at center, #000 30%, transparent 80%); }
 
-  /* floating glass panels */
-  .panel { position: fixed; z-index: 1; background: var(--glass); border: 1px solid var(--edge); border-radius: 10px;
-           backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 10px 12px; overflow: hidden;
-           box-shadow: 0 0 0 1px rgba(56,189,248,.06), 0 18px 60px rgba(0,0,0,.45), 0 0 30px rgba(56,189,248,.12) inset;
-           animation: float 9s ease-in-out infinite; pointer-events: none; }
-  .panel h3 { margin: 0 0 8px; font: 600 9.5px/1 Inter, sans-serif; letter-spacing: .16em; color: #cfe3ff; text-transform: uppercase; }
-  @keyframes float { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-8px) } }
-  /* left column: every panel stacked; the score sits alone bottom-right */
-  .stack { position: fixed; z-index: 1; left: 2.5vw; top: 3vh; bottom: 3vh; width: 410px;
-           display: flex; flex-direction: column; justify-content: center; gap: 12px; pointer-events: none; }
-  .stack .panel { position: relative; }
-  .p-arch  { animation-delay: -2s; }
-  .p-check { animation-delay: -5s; }
-  .p-code  { animation-delay: -1s; }
-  .p-gov   { animation-delay: -6s; }
-  .p-score { position: fixed; bottom: 6vh; right: 3vw; width: 180px; animation-delay: -4s; text-align: center; }
-  .check ul { columns: 2; column-gap: 18px; }
-  .flow { display: flex; flex-direction: column; gap: 5px; font: 500 9.5px/1 Inter, sans-serif; }
-  .flow .row { display: flex; align-items: center; gap: 6px; }
-  .box { border: 1px solid rgba(147,197,253,.55); border-radius: 5px; padding: 5px 7px; color: #dbeafe; background: rgba(30,64,120,.35); white-space: nowrap; }
-  .arr { color: var(--cyan); }
-  .check li { list-style: none; display: flex; justify-content: space-between; gap: 10px; padding: 4px 0;
-              border-bottom: 1px solid rgba(96,165,250,.14); font-size: 11px; color: #dbeafe; }
-  .check ul { margin: 0; padding: 0; } .check li:last-child { border: 0; }
-  .check b { color: var(--ok); font-weight: 600; }
-  pre { margin: 0; font: 9.5px/1.55 "JetBrains Mono", ui-monospace, monospace; color: #cbd5e1; white-space: pre; overflow: hidden; }
-  pre .k { color: #7dd3fc } pre .f { color: #a5b4fc } pre .s { color: #86efac } pre .n { color: #475569 }
-  .gauge { width: 96px; height: 96px; margin: 2px auto 4px; }
-  .gauge .num { font: 800 30px Orbitron, sans-serif; fill: #e0f2fe; }
-  .gauge .den { font: 500 11px Inter, sans-serif; fill: #93c5fd; }
-  .score-l { font-size: 10px; letter-spacing: .14em; color: var(--ok); text-transform: uppercase; }
-  .chain { display: flex; justify-content: space-between; align-items: center; gap: 4px; }
-  .step { text-align: center; font: 600 9.5px/1.3 Inter, sans-serif; color: #dbeafe; letter-spacing: .08em; text-transform: uppercase; }
-  .step small { display: block; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--mute); font-size: 10px; }
-  .step .ic { width: 32px; height: 32px; margin: 0 auto 5px; border: 1px solid rgba(147,197,253,.55); border-radius: 8px;
-              display: grid; place-items: center; background: rgba(30,64,120,.35); }
-  .step svg { width: 17px; height: 17px; stroke: #93c5fd; fill: none; stroke-width: 1.6; }
+  .page { position: relative; z-index: 1; min-height: 100vh; display: grid; grid-template-columns: minmax(380px, 40%) 1fr;
+          align-items: center; gap: 2vw; padding: 3vh 3vw; }
 
-  /* centre: title + sign-in */
-  main { position: relative; z-index: 2; min-height: 100%; display: flex; flex-direction: column; align-items: center;
-         justify-content: center; padding: 32px 16px 40px; }
-  .mark { width: 52px; height: 52px; filter: drop-shadow(0 0 18px rgba(56,189,248,.55)); }
-  h1 { margin: 6px 0 0; text-align: center; font: 800 clamp(24px, 6vw, 40px)/1.05 Orbitron, sans-serif; letter-spacing: .04em;
-       background: linear-gradient(90deg, #60a5fa 0%, #e0f2fe 45%, #67e8f9 75%, #22d3ee 100%);
-       -webkit-background-clip: text; background-clip: text; color: transparent;
-       filter: drop-shadow(0 0 26px rgba(56,189,248,.45)); }
-  .tag { margin: 8px 0 20px; color: #b6c8e6; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; text-align: center; }
-  .card { width: min(360px, 100%); padding: 22px 24px 16px; border-radius: 12px;
-          background: linear-gradient(180deg, rgba(12,32,66,.82), rgba(6,16,36,.86)); border: 1px solid var(--edge);
-          backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 24px 80px rgba(0,0,0,.55); }
-  label { display: block; margin: 0 0 6px; font-size: 11px; letter-spacing: .14em; color: var(--mute); text-transform: uppercase; }
-  input { width: 100%; height: 38px; padding: 0 12px; margin-bottom: 14px; border-radius: 7px; font: inherit; color: var(--ink);
-          background: rgba(3,10,26,.75); border: 1px solid rgba(96,165,250,.25); outline: none; }
+  /* ── left: stylish title + sign-in ── */
+  .brand { display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .lens { width: 112px; height: 112px; margin-bottom: 6px; filter: drop-shadow(0 0 26px rgba(56,189,248,.65)); }
+  .k9x { margin: 0; font: 900 clamp(46px, 6.2vw, 90px)/.95 Orbitron, sans-serif; letter-spacing: .08em;
+         background: linear-gradient(180deg, #ffffff 0%, #bfe6ff 38%, #38bdf8 72%, #1d6fd8 100%);
+         -webkit-background-clip: text; background-clip: text; color: transparent;
+         filter: drop-shadow(0 0 28px rgba(56,189,248,.45)); }
+  .word { margin: 4px 0 0; font: 600 clamp(20px, 2.4vw, 33px)/1 Orbitron, sans-serif; letter-spacing: .42em; padding-left: .42em;
+          color: #cfeaff; text-shadow: 0 0 18px rgba(56,189,248,.55); }
+  .rule { width: min(420px, 80%); height: 1px; margin: 16px 0 10px;
+          background: linear-gradient(90deg, transparent, var(--cyan), transparent); box-shadow: 0 0 10px var(--cyan); }
+  .tag { color: #a9c3e4; font-size: 11.5px; letter-spacing: .22em; text-transform: uppercase; margin-bottom: 20px; }
+
+  .card { width: min(360px, 100%); padding: 20px 22px 14px; border-radius: 12px; text-align: left;
+          background: linear-gradient(180deg, rgba(10,34,70,.86), rgba(4,16,36,.9)); border: 1px solid var(--edge);
+          backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+          box-shadow: 0 24px 80px rgba(0,0,0,.55), 0 0 28px rgba(56,189,248,.12); }
+  label { display: block; margin: 0 0 5px; font-size: 10.5px; letter-spacing: .14em; color: var(--mute); text-transform: uppercase; }
+  input { width: 100%; height: 38px; padding: 0 12px; margin-bottom: 12px; border-radius: 7px; font: inherit; color: var(--ink);
+          background: rgba(2,10,24,.8); border: 1px solid rgba(96,165,250,.25); outline: none; }
   input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(56,189,248,.2); }
   button.go { width: 100%; height: 40px; border: 0; border-radius: 7px; cursor: pointer; color: #fff;
               font: 600 14px Inter, sans-serif; background: linear-gradient(90deg, #2563eb, #0891b2);
               box-shadow: 0 8px 28px rgba(14,165,233,.35); }
   button.go:hover { filter: brightness(1.1); }
-  .err { min-height: 18px; margin-top: 10px; color: #fca5a5; font-size: 12.5px; text-align: center; }
-  .demo { margin-top: 6px; padding: 8px 10px; border-radius: 7px; font-size: 12px; color: #cfe3ff;
-          background: rgba(56,189,248,.08); border: 1px solid rgba(56,189,248,.25); text-align: center; }
+  .err { min-height: 16px; margin-top: 8px; color: #fca5a5; font-size: 12.5px; text-align: center; }
+  .demo { margin-top: 4px; padding: 8px 10px; border-radius: 7px; font-size: 12px; color: #cfe3ff; text-align: center;
+          background: rgba(56,189,248,.08); border: 1px solid rgba(56,189,248,.25); }
   .demo code { font-family: "JetBrains Mono", monospace; color: #7dd3fc; }
   .demo small { display: block; color: var(--mute); margin-top: 3px; }
-  .foot { margin-top: 14px; font-size: 12px; color: var(--mute); text-align: center; }
-  .foot a { color: #93c5fd; text-decoration: none; }
-  @media (max-height: 900px) { .p-gov { display: none; } }
-  @media (max-height: 720px) { .p-code { display: none; } }
-  @media (max-width: 1250px) { .stack { display: none; } }
-  @media (max-width: 900px) { .panel { display: none; } }
+  .foot { margin-top: 12px; font-size: 12px; } .foot a { color: #93c5fd; text-decoration: none; }
+
+  /* ── right: static holographic panel grid (part of the background scene) ── */
+  .holo { perspective: 1600px; pointer-events: none; }
+  .grid { display: grid; grid-template-columns: 1.55fr 1fr; gap: 14px; transform: rotateY(-9deg) rotateX(2deg); transform-origin: left center; }
+  .panel { background: var(--glass); border: 1px solid var(--edge); border-radius: 10px; padding: 12px 14px; overflow: hidden;
+           backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+           box-shadow: 0 0 22px rgba(56,189,248,.18), inset 0 0 24px rgba(56,189,248,.06); }
+  .panel h3 { margin: 0 0 10px; font: 600 10.5px/1 Inter, sans-serif; letter-spacing: .16em; color: #d6ecff; text-transform: uppercase; }
+  .arch svg { width: 100%; height: auto; display: block; }
+  .arch text { font: 600 10px Inter, sans-serif; fill: #dbeafe; letter-spacing: .04em; }
+  .check ul { margin: 0; padding: 0; list-style: none; }
+  .check li { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(96,165,250,.14); font-size: 11.5px; color: #dbeafe; }
+  .check li:last-child { border: 0; }
+  .check .ic { width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(147,197,253,.55); display: grid; place-items: center; flex: none; }
+  .check .ic svg { width: 12px; height: 12px; stroke: #93c5fd; fill: none; stroke-width: 2; }
+  .check li span { flex: 1; } .check li small { display: block; color: var(--mute); font-size: 10px; }
+  .check b { color: var(--ok); font-size: 13px; }
+  pre { margin: 0; font: 10.5px/1.6 "JetBrains Mono", ui-monospace, monospace; color: #cbd5e1; white-space: pre; }
+  pre .k { color: #7dd3fc } pre .f { color: #a5b4fc } pre .s { color: #fbbf24 } pre .n { color: #475569 } pre .c { color: #34d399 }
+  .score { text-align: center; }
+  .gauge { width: 112px; height: 112px; margin: 0 auto 4px; display: block; }
+  .gauge .num { font: 800 30px Orbitron, sans-serif; fill: #e0f2fe; } .gauge .den { font: 500 10px Inter, sans-serif; fill: #93c5fd; }
+  .score .l1 { font-size: 10.5px; letter-spacing: .14em; color: #b6cdea; text-transform: uppercase; }
+  .score .l2 { font-size: 11px; letter-spacing: .14em; color: var(--ok); text-transform: uppercase; font-weight: 600; }
+  .chain { display: flex; justify-content: space-between; align-items: flex-start; gap: 4px; }
+  .step { text-align: center; font: 600 9.5px/1.25 Inter, sans-serif; color: #dbeafe; letter-spacing: .08em; text-transform: uppercase; flex: 1; }
+  .step small { display: block; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--mute); font-size: 9.5px; margin-top: 2px; }
+  .step .ic { width: 36px; height: 36px; margin: 0 auto 6px; border: 1px solid rgba(147,197,253,.6); border-radius: 8px;
+              display: grid; place-items: center; background: rgba(30,64,120,.35); box-shadow: 0 0 12px rgba(56,189,248,.2); }
+  .step svg { width: 19px; height: 19px; stroke: #93c5fd; fill: none; stroke-width: 1.6; }
+  .arr { color: var(--cyan); margin-top: 11px; font-size: 13px; }
+
+  @media (max-height: 760px) { .code { display: none; } }
+  @media (max-width: 1100px) { .page { grid-template-columns: 1fr; } .holo { display: none; } }
 </style>
 </head>
 <body>
 <canvas id="bg"></canvas>
-<div class="grid"></div>
 
+<div class="page">
+  <section class="brand">
+    <svg class="lens" viewBox="0 0 120 120" aria-hidden="true">
+      <defs>
+        <radialGradient id="lg" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#bfe6ff" stop-opacity=".55"/><stop offset=".6" stop-color="#1d4ed8" stop-opacity=".18"/><stop offset="1" stop-color="#020814" stop-opacity=".1"/></radialGradient>
+        <linearGradient id="rim" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#e0f2fe"/><stop offset=".5" stop-color="#38bdf8"/><stop offset="1" stop-color="#1d6fd8"/></linearGradient>
+      </defs>
+      <circle cx="50" cy="50" r="33" fill="url(#lg)"/>
+      <circle cx="50" cy="50" r="33" fill="none" stroke="url(#rim)" stroke-width="7"/>
+      <path d="M74 74L104 104" stroke="url(#rim)" stroke-width="11" stroke-linecap="round"/>
+      <path d="M37 51l9 9 18-20" fill="none" stroke="#e0f2fe" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M30 36a26 26 0 0 1 16-11" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    <h1 class="k9x">K9X</h1>
+    <div class="word">INSPECTOR</div>
+    <div class="rule"></div>
+    <div class="tag">Continuous conformance for K9-AIF solutions</div>
 
+    <form class="card" id="f" autocomplete="on">
+      <label for="u">Username</label>
+      <input id="u" name="username" autocomplete="username" required>
+      <label for="p">Password</label>
+      <input id="p" name="password" type="password" autocomplete="current-password" required>
+      <button class="go" type="submit">Sign in</button>
+      <div class="err" id="err"></div>
+      <div class="demo" id="demo" hidden></div>
+    </form>
+    <div class="foot"><a href="/about">About K9X Inspector</a></div>
+  </section>
 
+  <section class="holo" aria-hidden="true">
+    <div class="grid">
+      <div class="panel arch">
+        <h3>Solution architecture</h3>
+        <svg viewBox="0 0 420 170">
+          <defs><marker id="a" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#38bdf8"/></marker></defs>
+          <g fill="rgba(30,64,120,.4)" stroke="rgba(147,197,253,.7)" stroke-width="1.2">
+            <rect x="10" y="12" width="96" height="34" rx="5"/><rect x="160" y="12" width="104" height="34" rx="5"/><rect x="318" y="12" width="92" height="34" rx="5"/>
+            <rect x="10" y="68" width="96" height="34" rx="5"/><rect x="160" y="68" width="104" height="34" rx="5"/><rect x="318" y="68" width="92" height="34" rx="5"/>
+            <rect x="10" y="124" width="96" height="34" rx="5"/><rect x="160" y="124" width="104" height="34" rx="5"/><rect x="318" y="124" width="92" height="34" rx="5"/>
+          </g>
+          <g text-anchor="middle">
+            <text x="58" y="33">ROUTER</text><text x="212" y="33">ORCHESTRATOR</text><text x="364" y="33">SQUAD</text>
+            <text x="58" y="89">AGENT ABB</text><text x="212" y="89">LLM_INVOKE()</text><text x="364" y="89">MODEL</text>
+            <text x="58" y="145">K9X SHIELD</text><text x="212" y="145">GUARDIAN</text><text x="364" y="145">K9X HIL</text>
+          </g>
+          <g stroke="#38bdf8" stroke-width="1.4" fill="none" marker-end="url(#a)">
+            <path d="M106 29H158"/><path d="M264 29H316"/><path d="M364 46V56H58V66"/>
+            <path d="M106 85H158"/><path d="M264 85H316"/>
+            <path d="M58 102V122"/><path d="M106 141H158"/><path d="M264 141H316"/>
+          </g>
+        </svg>
+      </div>
 
+      <div class="panel check">
+        <h3>Conformance checklist</h3>
+        <ul>
+          <li><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h7"/></svg></div><span>ABB contracts<small>agents extend an agent ABB</small></span><b>✓</b></li>
+          <li><div class="ic"><svg viewBox="0 0 24 24"><path d="M5 5h14v4H5zM5 15h14v4H5zM12 9v6"/></svg></div><span>Three-layer decoupling<small>router · orchestrator · squad</small></span><b>✓</b></li>
+          <li><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 12h16M14 6l6 6-6 6"/></svg></div><span>Single model path<small>every call via llm_invoke()</small></span><b>✓</b></li>
+          <li><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg></div><span>Governance by construction<small>Shield + Guardian on</small></span><b>✓</b></li>
+          <li><div class="ic"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></div><span>Secrets &amp; Zero Trust<small>.env only · signed identity</small></span><b>✓</b></li>
+        </ul>
+      </div>
 
+      <div class="panel code">
+        <h3>Code analysis</h3>
+<pre><span class="n"> 1</span> <span class="k">class</span> <span class="f">ClaimsAgent</span>(BaseAgent):
+<span class="n"> 2</span>     <span class="k">def</span> <span class="f">execute</span>(self, payload):
+<span class="n"> 3</span>         req = InferenceRequest(prompt=payload[<span class="s">"text"</span>],
+<span class="n"> 4</span>                                task_type=<span class="s">"extraction"</span>)
+<span class="n"> 5</span>         <span class="k">try</span>:
+<span class="n"> 6</span>             resp = <span class="f">llm_invoke</span>(self.config, req)  <span class="c"># K9-LLM-001 ✓</span>
+<span class="n"> 7</span>         <span class="k">except</span> RuntimeError <span class="k">as</span> exc:    <span class="c"># K9-LLM-002 ✓</span>
+<span class="n"> 8</span>             <span class="k">return</span> {<span class="s">"status"</span>: <span class="s">"failed"</span>, <span class="s">"reason"</span>: str(exc)}
+<span class="n"> 9</span>         <span class="k">return</span> {<span class="s">"output"</span>: resp}</pre>
+      </div>
 
+      <div class="panel score">
+        <h3>Compliance score</h3>
+        <svg class="gauge" viewBox="0 0 120 120">
+          <defs><linearGradient id="g"><stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>
+          <circle cx="60" cy="60" r="50" stroke="rgba(96,165,250,.18)" stroke-width="9" fill="none"/>
+          <circle cx="60" cy="60" r="50" stroke="url(#g)" stroke-width="9" fill="none" stroke-linecap="round" stroke-dasharray="289 314" transform="rotate(-90 60 60)"/>
+          <text class="num" x="60" y="64" text-anchor="middle">92</text>
+          <text class="den" x="60" y="82" text-anchor="middle">/ 100</text>
+        </svg>
+        <div class="l1">Rules passing</div>
+        <div class="l2">Compliant</div>
+      </div>
 
-<div class="stack">
-<div class="panel p-arch" aria-hidden="true">
-  <h3>Solution architecture</h3>
-  <div class="flow">
-    <div class="row"><span class="box">Router</span><span class="arr">→</span><span class="box">Orchestrator</span><span class="arr">→</span><span class="box">Squad</span></div>
-    <div class="row"><span class="box">Agent ABB</span><span class="arr">→</span><span class="box">llm_invoke()</span><span class="arr">→</span><span class="box">Model</span></div>
-    <div class="row"><span class="box">Shield</span><span class="arr">⇄</span><span class="box">Guardian</span><span class="arr">⇄</span><span class="box">K9X HIL</span></div>
-  </div>
+      <div class="panel">
+        <h3>Framework controls inspected</h3>
+        <div class="chain">
+          <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h7"/></svg></div>Contracts<small>ABB / SBB</small></div>
+          <span class="arr">→</span>
+          <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg></div>Govern<small>Shield · Guardian</small></div>
+          <span class="arr">→</span>
+          <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></div>Zero Trust<small>identity · policy</small></div>
+          <span class="arr">→</span>
+          <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="M8 10l3 2-3 2M13 14h3"/></svg></div>Kafka<small>ownership</small></div>
+          <span class="arr">→</span>
+          <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4"/><circle cx="12" cy="12" r="3"/></svg></div>Versions<small>latest k9-aif</small></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Inspection flow</h3>
+        <div class="chain">
+          <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="8" r="2"/><path d="M6 8v8M18 10c0 4-6 4-10 6"/></svg></div>Push</div>
+          <span class="arr">→</span>
+          <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg></div>Inspect</div>
+          <span class="arr">→</span>
+          <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h4"/></svg></div>Report</div>
+          <span class="arr">→</span>
+          <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 19V5h11l5 5v9z"/><path d="M8 13l3 3 5-6"/></svg></div>Guide</div>
+        </div>
+      </div>
+    </div>
+  </section>
 </div>
-<div class="panel p-check check" aria-hidden="true">
-  <h3>Conformance checklist</h3>
-  <ul>
-    <li>ABB contracts <b>✓</b></li>
-    <li>Three-layer decoupling <b>✓</b></li>
-    <li>Single model path <b>✓</b></li>
-    <li>Governance by construction <b>✓</b></li>
-    <li>Kafka ownership <b>✓</b></li>
-    <li>Secrets in .env <b>✓</b></li>
-  </ul>
-</div>
-<div class="panel p-code" aria-hidden="true">
-  <h3>Code analysis</h3>
-<pre><span class="n">1</span> <span class="k">class</span> <span class="f">ClaimsAgent</span>(BaseAgent):
-<span class="n">2</span>     <span class="k">def</span> <span class="f">execute</span>(self, payload):
-<span class="n">3</span>         req = InferenceRequest(prompt=payload[<span class="s">"text"</span>],
-<span class="n">4</span>                                task_type=<span class="s">"extraction"</span>)
-<span class="n">5</span>         <span class="k">try</span>:
-<span class="n">6</span>             resp = <span class="f">llm_invoke</span>(self.config, req)
-<span class="n">7</span>         <span class="k">except</span> RuntimeError <span class="k">as</span> exc:
-<span class="n">8</span>             <span class="k">return</span> {<span class="s">"status"</span>: <span class="s">"failed"</span>, <span class="s">"reason"</span>: str(exc)}
-<span class="n">9</span>         <span class="k">return</span> {<span class="s">"output"</span>: resp}</pre>
-</div>
-<div class="panel p-gov" aria-hidden="true">
-  <h3>Framework controls inspected</h3>
-  <div class="chain">
-    <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h7"/></svg></div>Contracts<small>ABB / SBB</small></div>
-    <span class="arr">→</span>
-    <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg></div>Govern<small>Shield + Guardian</small></div>
-    <span class="arr">→</span>
-    <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></div>Zero Trust<small>identity + policy</small></div>
-    <span class="arr">→</span>
-    <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg></div>Inspect<small>every push</small></div>
-    <span class="arr">→</span>
-    <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h4"/></svg></div>Guide<small>generated docs</small></div>
-  </div>
-</div>
-</div>
-
-<div class="panel p-score" aria-hidden="true">
-  <h3>Compliance score</h3>
-  <svg class="gauge" viewBox="0 0 120 120">
-    <circle cx="60" cy="60" r="50" stroke="rgba(96,165,250,.18)" stroke-width="9" fill="none"/>
-    <circle cx="60" cy="60" r="50" stroke="url(#g)" stroke-width="9" fill="none" stroke-linecap="round"
-            stroke-dasharray="289 314" transform="rotate(-90 60 60)"/>
-    <defs><linearGradient id="g"><stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>
-    <text class="num" x="60" y="66" text-anchor="middle">92</text>
-    <text class="den" x="60" y="84" text-anchor="middle">rules pass %</text>
-  </svg>
-  <div class="score-l">Compliant</div>
-</div>
-
-
-
-<main>
-  <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
-    <defs><linearGradient id="m" x1="0" x2="1"><stop offset="0" stop-color="#60a5fa"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>
-    <circle cx="27" cy="27" r="17" fill="rgba(56,189,248,.10)" stroke="url(#m)" stroke-width="4"/>
-    <path d="M39.5 39.5L56 56" stroke="url(#m)" stroke-width="6" stroke-linecap="round"/>
-    <path d="M19 27l6 6 11-12" fill="none" stroke="#e0f2fe" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>
-  <h1>K9X INSPECTOR</h1>
-  <div class="tag">Continuous conformance for K9-AIF solutions</div>
-
-  <form class="card" id="f" autocomplete="on">
-    <label for="u">Username</label>
-    <input id="u" name="username" autocomplete="username" required>
-    <label for="p">Password</label>
-    <input id="p" name="password" type="password" autocomplete="current-password" required>
-    <button class="go" type="submit">Sign in</button>
-    <div class="err" id="err"></div>
-    <div class="demo" id="demo" hidden></div>
-  </form>
-  <div class="foot"><a href="/about">About K9X Inspector</a></div>
-</main>
 
 <script>
-// drifting particles + data streams (decorative)
+// Static background: bokeh dots and faint binary columns, drawn once (and on resize). No animation.
 (() => {
   const c = document.getElementById('bg'), x = c.getContext('2d');
-  let w, h, pts = [];
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  function size() {
-    w = c.width = innerWidth * devicePixelRatio; h = c.height = innerHeight * devicePixelRatio;
-    pts = Array.from({length: Math.min(140, Math.floor(innerWidth / 9))}, () => ({
-      x: Math.random() * w, y: Math.random() * h, r: (Math.random() * 1.6 + .4) * devicePixelRatio,
-      v: (Math.random() * .35 + .08) * devicePixelRatio, a: Math.random() * .6 + .2 }));
-  }
-  function draw() {
+  let seed = 7;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;   // fixed pattern every load
+  function paint() {
+    seed = 7;
+    const dpr = devicePixelRatio || 1, w = c.width = innerWidth * dpr, h = c.height = innerHeight * dpr;
     x.clearRect(0, 0, w, h);
-    for (const p of pts) {
-      x.fillStyle = `rgba(56,189,248,${p.a})`; x.beginPath(); x.arc(p.x, p.y, p.r, 0, 6.283); x.fill();
-      if (!reduce) { p.y -= p.v; if (p.y < -5) { p.y = h + 5; p.x = Math.random() * w; } }
+    x.font = `${11 * dpr}px "JetBrains Mono", monospace`;
+    const ncol = Math.floor(innerWidth * .4 / 22);
+    for (let i = 0; i < ncol; i++) {
+      const cx = (i * 22 + 8) * dpr, start = rnd() * h, len = Math.floor(rnd() * 22 + 8);
+      for (let k = 0; k < len; k++) {
+        const yy = start - k * 14 * dpr; if (yy < 0) break;
+        x.fillStyle = `rgba(56,189,248,${(0.14 * (1 - k / len)).toFixed(3)})`;
+        x.fillText(rnd() < .5 ? '0' : '1', cx, yy);
+      }
     }
-    x.strokeStyle = 'rgba(96,165,250,.07)'; x.lineWidth = devicePixelRatio;
-    for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < Math.min(pts.length, i + 6); j++) {
-      const a = pts[i], b = pts[j], d = Math.hypot(a.x - b.x, a.y - b.y);
-      if (d < 120 * devicePixelRatio) { x.beginPath(); x.moveTo(a.x, a.y); x.lineTo(b.x, b.y); x.stroke(); }
+    for (let i = 0; i < Math.min(170, Math.floor(innerWidth / 8)); i++) {
+      const px = rnd() * w, py = rnd() * h, r = (rnd() * 2 + .4) * dpr * 3, a = rnd() * .5 + .12;
+      const g = x.createRadialGradient(px, py, 0, px, py, r);
+      g.addColorStop(0, `rgba(125,211,252,${a})`); g.addColorStop(1, 'rgba(125,211,252,0)');
+      x.fillStyle = g; x.beginPath(); x.arc(px, py, r, 0, 6.283); x.fill();
     }
-    if (!reduce) requestAnimationFrame(draw);
   }
-  addEventListener('resize', size); size(); draw();
+  addEventListener('resize', paint); paint();
 })();
 
 fetch('/api/public').then(r => r.json()).then(d => {
