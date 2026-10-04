@@ -15,6 +15,7 @@
   * { box-sizing: border-box; } [hidden] { display: none !important; }
   body { margin: 0; font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); }
   header { padding: 12px 24px; border-bottom: 1px solid var(--line); display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .home { padding: 5px 10px; font-size: 13px; }
   header h1 { font-size: 18px; margin: 0; display: flex; align-items: center; gap: 8px; }
   header h1 svg { width: 24px; height: 24px; }
   .sub { color: var(--mute); font-size: 12.5px; }
@@ -62,6 +63,7 @@
 </head>
 <body>
 <header>
+  <a class="btn home" href="/" title="Back to the K9X Inspector home page">← Home</a>
   <h1><svg viewBox="0 0 64 64"><circle cx="27" cy="27" r="17" fill="none" stroke="#1d6fd8" stroke-width="5"/><path d="M39.5 39.5L56 56" stroke="#0891b2" stroke-width="7" stroke-linecap="round"/><path d="M19 27l6 6 11-12" fill="none" stroke="#1e8449" stroke-width="4" stroke-linecap="round"/></svg>K9X Inspector</h1>
   <span class="sub">Continuous conformance for K9-AIF solutions</span>
   <span class="spacer"></span>
@@ -153,8 +155,8 @@ async function api(path, opt = {}) {
 }
 const when = t => t ? new Date(t).toLocaleString() : '';
 const cnt = c => c ? `<span class="sev critical">${c.critical}</span> <span class="sev violation">${c.violation}</span> <span class="sev warning">${c.warning}</span> <span class="sev recommendation">${c.recommendation}</span>` : '';
-const FW_TEXT = {current: 'up to date', outdated: 'update to latest', 'floor-behind': 'raise minimum', unpinned: 'no version', undeclared: 'not declared'};
-const FW_COLOR = {current: 'var(--ok)', outdated: 'var(--crit)', 'floor-behind': 'var(--warn)', unpinned: 'var(--warn)', undeclared: 'var(--warn)'};
+const FW_TEXT = {bundled: 'ships with the framework', current: 'up to date', outdated: 'update to latest', 'floor-behind': 'raise minimum', unpinned: 'no version', undeclared: 'not declared'};
+const FW_COLOR = {bundled: 'var(--ok)', current: 'var(--ok)', outdated: 'var(--crit)', 'floor-behind': 'var(--warn)', unpinned: 'var(--warn)', undeclared: 'var(--warn)'};
 const fwCell = fw => !fw || !fw.status ? '<span class="muted">—</span>' :
   `<span class="mono">${esc((fw.declared || '').replace(/^["']|["',]+$/g, '') || '—')}</span>
    <div style="color:${FW_COLOR[fw.status]};font-size:12px;font-weight:600">${FW_TEXT[fw.status] || esc(fw.status)}${fw.latest ? ' · latest ' + esc(fw.latest) : ''}</div>`;
