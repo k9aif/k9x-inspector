@@ -131,7 +131,7 @@
       <div class="err" id="err"></div>
       <div class="demo" id="demo" hidden></div>
     </form>
-    <div class="foot"><a href="/about">About K9X Inspector</a></div>
+    <div class="foot"><a href="/">← K9X Inspector home</a> · <a href="/about">About</a></div>
   </section>
 
   <!-- right: dashboard (decorative) -->
@@ -275,7 +275,7 @@ document.getElementById('f').addEventListener('submit', async e => {
   const err = document.getElementById('err'); err.textContent = '';
   const r = await fetch('/api/login', {method: 'POST', headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({username: document.getElementById('u').value, password: document.getElementById('p').value})});
-  if (r.ok) { location.replace('/'); return; }
+  if (r.ok) { location.replace('/app'); return; }
   const j = await r.json().catch(() => ({}));
   err.textContent = j.detail || 'Sign-in failed';
 });

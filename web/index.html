@@ -178,7 +178,7 @@ async function header() {
   const s = await api('/api/status');
   $('#sched').innerHTML = `Schedule <b>${esc(s.schedule)}</b>${s.next_schedule ? ' · next ' + new Date(s.next_schedule * 1000).toLocaleTimeString() : ''} · webhook <b>${s.webhook ? 'on' : 'off'}</b>${s.latest_framework ? ' · k9-aif latest <b>' + esc(s.latest_framework) + '</b>' : ''}${s.current ? ' · running #' + s.current : ''}${s.queued ? ' · ' + s.queued + ' queued' : ''}`;
 }
-$('#out').onclick = async () => { await fetch('/api/logout', {method: 'POST'}); location.replace('/login'); };
+$('#out').onclick = async () => { await fetch('/api/logout', {method: 'POST'}); location.replace('/'); };
 
 // ── applications ──
 async function loadApps() {

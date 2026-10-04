@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K9X Inspector — Continuous conformance for K9-AIF solutions</title>
+<link rel="icon" href="/static/logo.svg" type="image/svg+xml">
+<style>
+  :root {
+    --bg: #0a1222; --bg2: #0f1a30; --card: #12203a; --border: #22324f;
+    --text: #d6deea; --muted: #a8b4c8; --hi: #38bdf8; --hi-d: #0ea5e9; --teal: #2dd4bf;
+    --ok: #34d399; --crit: #f87171; --viol: #fb923c; --warn: #fbbf24; --reco: #93c5fd;
+    --mono: ui-monospace, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 16px/1.7 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+  a { color: var(--hi); }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 22px; }
+  header.top { border-bottom: 1px solid var(--border); background: rgba(15,26,48,.94); position: sticky; top: 0; z-index: 10; backdrop-filter: blur(6px); }
+  header.top .wrap { display: flex; align-items: center; gap: 14px; padding-block: 12px; flex-wrap: wrap; }
+  .logo { display: flex; align-items: center; gap: 8px; font-weight: 800; letter-spacing: -.3px; font-size: 18px; color: var(--text); text-decoration: none; }
+  .logo img { width: 24px; height: 24px; } .logo span { color: var(--hi); }
+  .pill { font: 700 10.5px var(--mono); color: var(--hi); border: 1px solid var(--hi); border-radius: 4px; padding: 2px 6px; }
+  header.top nav { margin-left: auto; display: flex; gap: 16px; font-size: 13px; flex-wrap: wrap; align-items: center; }
+  header.top nav a { color: var(--muted); text-decoration: none; }
+  header.top nav a:hover { color: var(--text); }
+  header.top nav a.signin { color: var(--hi); border: 1px solid rgba(56,189,248,.5); border-radius: 6px; padding: 3px 10px; }
+  section[id] { scroll-margin-top: 64px; }
+
+  .hero-band { border-bottom: 1px solid var(--border);
+    background: radial-gradient(900px 420px at 80% 30%, rgba(14,165,233,.16), transparent 70%),
+                radial-gradient(700px 400px at 10% 90%, rgba(45,212,191,.08), transparent 70%),
+                linear-gradient(180deg, #071022, var(--bg)); }
+  .hero { padding: 64px 0 48px; display: grid; grid-template-columns: 1.25fr .9fr; gap: 40px; align-items: center; }
+  .eyebrow { font: 700 12px var(--mono); color: var(--teal); letter-spacing: .08em; text-transform: uppercase; }
+  h1 { font-size: clamp(30px, 4.2vw, 44px); line-height: 1.12; margin: 10px 0 14px; letter-spacing: -.8px; }
+  h1 em { font-style: normal; color: var(--hi); }
+  .lede { font-size: 17px; color: var(--muted); max-width: 640px; margin: 0 0 26px; }
+  .cta { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; border-radius: 8px; padding: 12px 22px; font-weight: 700; font-size: 15px;
+         cursor: pointer; border: 1px solid transparent; text-decoration: none; font-family: inherit; }
+  .btn-primary { background: var(--hi); color: #04121f; } .btn-primary:hover { background: var(--hi-d); }
+  .btn-ghost { color: var(--text); border-color: var(--border); background: transparent; }
+  .btn-ghost:hover { border-color: var(--hi); color: var(--hi); }
+  .logins { font: 12.5px var(--mono); color: var(--muted); margin-top: 14px; } .logins b { color: var(--text); font-weight: 600; }
+  #startErr { color: #fca5a5; font-size: 13px; }
+
+  /* hero preview: a compact sample report */
+  .preview { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+  .preview .top { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; font-size: 13px; color: var(--muted); }
+  .preview .top b { color: var(--text); font-size: 14px; }
+  .preview .verdict { margin-left: auto; font: 700 11px var(--mono); color: var(--warn); }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+  .stat { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 8px; text-align: center; }
+  .stat b { display: block; font-size: 20px; } .stat span { font-size: 11px; color: var(--muted); }
+  .find { display: flex; gap: 8px; font-size: 12.5px; padding: 7px 0; border-top: 1px solid var(--border); }
+  .sev { font: 700 10px var(--mono); padding: 2px 6px; border-radius: 4px; color: #0a1222; flex: none; height: fit-content; }
+  .sev.v { background: var(--viol); } .sev.w { background: var(--warn); } .sev.r { background: var(--reco); }
+  .find code { color: var(--hi); font-family: var(--mono); font-size: 11.5px; }
+  .find small { display: block; color: var(--muted); }
+
+  section { padding: 30px 0; }
+  h2 { font-size: 22px; margin: 0 0 6px; letter-spacing: -.3px; }
+  .sub { color: var(--muted); margin: 0 0 20px; max-width: 780px; }
+  .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px 18px 16px; }
+  .card h3 { margin: 0 0 6px; font-size: 16px; display: flex; gap: 10px; align-items: center; }
+  .card p { margin: 0; color: var(--muted); font-size: 14px; }
+  .card .ids { margin-top: 8px; font: 11px var(--mono); color: #7f93b3; }
+  .num { flex: none; width: 24px; height: 24px; border-radius: 50%; background: var(--hi); color: #04121f;
+         font: 800 12.5px var(--mono); display: inline-flex; align-items: center; justify-content: center; }
+  .ic { flex: none; width: 28px; height: 28px; border-radius: 7px; border: 1px solid rgba(56,189,248,.45); background: rgba(56,189,248,.08);
+        display: inline-grid; place-items: center; }
+  .ic svg { width: 16px; height: 16px; stroke: var(--hi); fill: none; stroke-width: 1.8; }
+  .figure { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 10px; }
+  .figure img { width: 100%; display: block; }
+  .caption { color: var(--muted); font-size: 13px; margin-top: 10px; }
+  code { font-family: var(--mono); font-size: 12.5px; color: var(--hi); }
+  .built-on { border: 1px solid rgba(56,189,248,.28); border-radius: 12px; padding: 22px 24px;
+              background: linear-gradient(160deg, rgba(56,189,248,.07), rgba(18,32,58,.6)); }
+  .built-on h2 { color: var(--hi); } .built-on p { color: var(--muted); margin: 12px 0 0; max-width: 780px; }
+  .eco { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-top: 16px; }
+  .eco div { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; background: rgba(10,18,34,.5); font-size: 13.5px; color: var(--muted); }
+  .eco b { display: block; color: var(--text); font-size: 14px; } .eco .me { border-color: var(--hi); }
+  .limits { border-left: 3px solid var(--hi); background: var(--card); border-radius: 0 10px 10px 0; padding: 16px 20px; }
+  .limits ul { margin: 6px 0 0; padding-left: 20px; color: var(--muted); } .limits li { margin: 4px 0; }
+  footer { border-top: 1px solid var(--border); margin-top: 26px; padding: 22px 0 34px; color: var(--muted); font-size: 13px; }
+  footer .wrap { display: flex; gap: 18px; flex-wrap: wrap; justify-content: space-between; }
+  @media (max-width: 900px) { .hero { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="/"><img src="/static/logo.svg" alt=""><span>K9X</span> Inspector</a>
+    <span class="pill">OPEN DEMONSTRATION</span>
+    <nav>
+      <a href="#checks">What it checks</a>
+      <a href="#how">How it works</a>
+      <a href="#outputs">What you get</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#k9aif">K9-AIF</a>
+      <a href="#scope">Scope</a>
+      <a class="signin" href="/login">Sign in</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero-band">
+<div class="wrap">
+  <section class="hero">
+    <div>
+      <div class="eyebrow">K9X ecosystem · continuous conformance</div>
+      <h1>Solutions built on K9-AIF keep its architecture.<br><em>Inspector checks it on every push.</em></h1>
+      <p class="lede">Point K9X Inspector at your GitHub repositories. On every push, or on a schedule, it reads each
+        solution — never running it — and reports where the code departs from the framework: contracts, layering, the
+        governed model path, Shield and Guardian, Zero Trust, secrets and the framework version. Every finding comes with
+        the file, the line and the fix.</p>
+      <div class="cta">
+        <button class="btn btn-primary" id="startDemo">Try the demo →</button>
+        <a class="btn btn-ghost" href="/login">Sign in</a>
+        <span id="startErr"></span>
+      </div>
+      <div class="logins" id="logins"></div>
+    </div>
+    <div class="preview" aria-label="Sample report">
+      <div class="top"><b>Sample inspection</b> acme/claims-solution · main <span class="verdict">NON-COMPLIANT · 75%</span></div>
+      <div class="stats">
+        <div class="stat"><b style="color:var(--crit)">0</b><span>critical</span></div>
+        <div class="stat"><b style="color:var(--viol)">4</b><span>violations</span></div>
+        <div class="stat"><b style="color:var(--warn)">21</b><span>warnings</span></div>
+        <div class="stat"><b style="color:var(--reco)">3</b><span>advice</span></div>
+      </div>
+      <div class="find"><span class="sev v">VIOL</span><div><code>orchestrators/claims_orchestrator.py:14</code><small>orchestrator imports agent classes — register them in the entry point</small></div></div>
+      <div class="find"><span class="sev w">WARN</span><div><code>agents/fraud_scoring_agent.py:38</code><small>llm_invoke() not inside try/except</small></div></div>
+      <div class="find"><span class="sev r">ADV</span><div><code>requirements.txt:2</code><small>requires k9-aif&gt;=1.4.0 — raise to the latest</small></div></div>
+    </div>
+  </section>
+</div>
+</div>
+
+<div class="wrap">
+  <section id="checks">
+    <h2>What it checks</h2>
+    <p class="sub">28 rules in eight areas. The rules are part of the framework itself (<code>k9_aif_abb.k9_inspect</code>), so
+      the command line, CI and this service apply exactly the same checks.</p>
+    <div class="grid">
+      <div class="card"><h3><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h7"/></svg></span>Contracts</h3>
+        <p>Agents extend <code>BaseAgent</code> or another agent ABB, so governance wraps them; loop agents keep their loop.</p><div class="ids">K9-CON-001 · 002</div></div>
+      <div class="card"><h3><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 4h14v4H5zM5 16h14v4H5zM12 8v8"/></svg></span>Three-layer decoupling</h3>
+        <p>Router → Orchestrators → Squads → Agents; each layer knows only the one below.</p><div class="ids">K9-DEC-001</div></div>
+      <div class="card"><h3><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 12h16M14 6l6 6-6 6"/></svg></span>One model path</h3>
+        <p>Every model call goes through <code>llm_invoke()</code> — where governance, retries and the call trace live.</p><div class="ids">K9-LLM-001 · 002 · 003</div></div>
+      <div class="card"><h3><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg></span>Governance</h3>
+        <p>Shield enabled with checks, Guardian on and failing closed, production mode, no agent opting out, orchestrators screening input.</p><div class="ids">K9-GOV-001 … 010</div></div>
+      <div class="card"><h3><span class="ic"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></span>Zero Trust</h3>
+        <p>Enabled at the orchestrator, with signed identity rather than roles claimed in the payload.</p><div class="ids">K9-GOV-011</div></div>
+      <div class="card"><h3><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="M8 10l3 2-3 2M13 14h3"/></svg></span>Kafka ownership</h3>
+        <p>Only routers and orchestrators publish; agents and squads raise <code>RequiresHIL</code> instead.</p><div class="ids">K9-KAF-001</div></div>
+      <div class="card"><h3><span class="ic"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3M15 8l2 2"/></svg></span>Secrets &amp; configuration</h3>
+        <p>No secrets in YAML, no committed <code>.env</code>, no private IP addresses; squad and agent YAML well formed.</p><div class="ids">K9-CFG-001 … 004 · K9-YAML-001 · 002</div></div>
+      <div class="card"><h3><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="4"/></svg></span>Framework version</h3>
+        <p>The k9-aif version each solution declares, against the latest release — and whether it predates governance by construction.</p><div class="ids">K9-DEP-001 · 002</div></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <h2>How it works</h2>
+    <p class="sub">Inspection is static and deterministic: Python is read as syntax trees and YAML as data; nothing from the
+      inspected repository is imported or run, and no model is involved, so the same commit always gives the same report.</p>
+    <div class="grid">
+      <div class="card"><h3><span class="num">1</span>Track</h3><p>List the applications to watch — any number, each a GitHub repository, branch and optional subfolder.</p></div>
+      <div class="card"><h3><span class="num">2</span>Trigger</h3><p>A GitHub push (signed webhook), a schedule that skips unchanged branches, or <i>Inspect now</i> for any public repository.</p></div>
+      <div class="card"><h3><span class="num">3</span>Inspect</h3><p>A shallow, size-limited clone is read against every registered rule.</p></div>
+      <div class="card"><h3><span class="num">4</span>Report &amp; guide</h3><p>Verdict, rule pass rate and ranked findings, plus a remediation guide — stored per commit.</p></div>
+    </div>
+  </section>
+
+  <section id="outputs">
+    <h2>What you get</h2>
+    <div class="grid">
+      <div class="card"><h3>Compliance report</h3><p>Verdict (compliant / with warnings / non-compliant), share of rules passing, findings ranked
+        critical → violation → warning → recommendation, each with file, line, the offending line and the fix. Markdown and JSON.</p></div>
+      <div class="card"><h3>Guidelines document</h3><p>A remediation plan in priority order: why each rule exists in the framework, every place it
+        is broken, and ready-to-use Shield, Guardian and Zero Trust configuration for the governance findings.</p></div>
+      <div class="card"><h3>History per application</h3><p>Every inspection is kept with its trigger and commit, so you can see when a
+        solution drifted and when it came back into line.</p></div>
+      <div class="card"><h3>Same rules in CI</h3><p><code>k9aif inspect &lt;folder&gt; --fail-on violation</code> fails a build on the
+        same findings this service reports.</p></div>
+    </div>
+  </section>
+
+  <section id="architecture">
+    <h2>Architecture</h2>
+    <p class="sub">K9X Inspector is itself a solution on the framework: it installs k9-aif and runs the framework's inspection
+      ABB (<code>K9Inspector</code>, <code>BaseInspectionRule</code>, <code>InspectionRuleRegistry</code>).</p>
+    <div class="figure"><img src="/static/architecture.svg" alt="K9X Inspector architecture"></div>
+    <p class="caption">Triggers queue inspections; one worker fetches the repository, the framework's inspector applies the rules,
+      and the report and guidelines are stored for the UI.</p>
+  </section>
+
+  <section id="k9aif">
+    <div class="built-on">
+      <h2>Built on the K9-AIF framework</h2>
+      <p>K9-AIF is an architecture-first framework for governed multi-agent systems: ABB contracts, three-layer decoupling,
+        governance by construction with k9x Shield and Granite Guardian, Zero Trust and human-in-the-loop review. Inspector
+        is how a team knows its solutions still follow it.</p>
+      <div class="eco">
+        <div><b>K9X Studio</b>Design and build solutions on the framework</div>
+        <div class="me"><b>K9X Inspector</b>Inspects solutions built on K9-AIF</div>
+        <div><b>K9X Sentinel</b>Keeps the framework current with new threats</div>
+        <div><b>K9X Satan</b>Security analysis: red-team attacks</div>
+        <div><b>K9X Repository</b>Enterprise architecture repository</div>
+        <div><b>K9X HIL</b>Human-in-the-loop review</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="scope">
+    <h2>Scope</h2>
+    <div class="limits">
+      <ul>
+        <li>Static inspection shows that the structure governance relies on is in place — not that a running deployment behaves
+          correctly. Runtime containment is what K9X Satan tests; human decisions are recorded in K9X HIL.</li>
+        <li>Public GitHub repositories, or private ones with a read-only token on the server.</li>
+        <li>This is an open public demonstration with sample data; do not enter real information.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap">
+    <span>K9X Inspector · part of the K9X ecosystem on the K9-AIF framework</span>
+    <span><a href="/about">About</a> · <a href="https://github.com/k9aif/k9x-inspector">GitHub</a> · <a href="https://github.com/k9aif/k9-aif-framework">K9-AIF</a></span>
+  </div>
+</footer>
+
+<script>
+fetch('/api/public').then(r => r.json()).then(d => {
+  if (d.demo) document.getElementById('logins').innerHTML = `Demo login: <b>${d.demo.user}</b> / <b>${d.demo.password}</b> (read-only)`;
+  else document.getElementById('startDemo').hidden = true;
+  window.__demo = d.demo;
+}).catch(() => {});
+document.getElementById('startDemo').addEventListener('click', async () => {
+  const d = window.__demo; const err = document.getElementById('startErr');
+  if (!d) { location.href = '/login'; return; }
+  const r = await fetch('/api/login', {method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({username: d.user, password: d.password})});
+  if (r.ok) location.href = '/app'; else err.textContent = 'Demo sign-in failed; try Sign in.';
+});
+</script>
+</body>
+</html>

@@ -97,3 +97,10 @@ def test_validate():
     repos.validate("https://github.com/k9aif/dow-k9x", "main", "src/k9_dow")
     with pytest.raises(repos.RepoError):
         repos.validate("https://github.com/k9aif/dow-k9x", "main", "../../etc")
+
+
+def test_landing_is_public_and_app_requires_sign_in():
+    with TestClient(app) as c:
+        assert c.get("/").status_code == 200 and "Try the demo" in c.get("/").text
+        r = c.get("/app", follow_redirects=False)
+        assert r.status_code == 303 and r.headers["location"] == "/login"

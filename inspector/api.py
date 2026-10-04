@@ -291,6 +291,12 @@ def sign_out():
 
 # ── pages ─────────────────────────────────────────────────────────────────────
 @app.get("/")
+def landing():
+    """Public landing page (K9X standard: what it is, how it works, architecture, then sign in)."""
+    return FileResponse(WEB / "landing.html")
+
+
+@app.get("/app")
 def index(user: Optional[str] = Depends(current_user)):
     if not user:
         return RedirectResponse("/login", status_code=303, headers=NO_STORE)
@@ -300,7 +306,7 @@ def index(user: Optional[str] = Depends(current_user)):
 @app.get("/login")
 def login_page(user: Optional[str] = Depends(current_user)):
     if user:
-        return RedirectResponse("/", status_code=303, headers=NO_STORE)
+        return RedirectResponse("/app", status_code=303, headers=NO_STORE)
     return FileResponse(WEB / "login.html", headers=NO_STORE)
 
 
