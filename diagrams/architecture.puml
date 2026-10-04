@@ -1,0 +1,42 @@
+@startuml architecture
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontSize 14
+skinparam componentBackgroundColor #EEF4FF
+skinparam componentBorderColor #1D6FD8
+skinparam packageBorderColor #8FA3C4
+skinparam ArrowColor #334155
+skinparam roundcorner 8
+left to right direction
+
+package "Triggers" {
+  [GitHub push\n(webhook, HMAC)] as WH
+  [Schedule\n(branch moved?)] as SCH
+  [UI: Inspect now /\nany GitHub URL] as UI
+}
+
+package "K9X Inspector (SBB)" {
+  [Queue + worker\n(one at a time)] as Q
+  [Repository fetch\n(shallow, size-capped,\nread only)] as R
+  [Guidelines\ngenerator] as G
+  [Store\n(SQLite: apps,\ninspections, docs)] as S
+  [Web UI + API\n(admin / demo)] as W
+}
+
+package "k9-aif framework (pip install k9-aif)" {
+  [K9Inspector] as KI
+  [SolutionProject\n(AST + YAML,\nnever executes)] as SP
+  [InspectionRuleRegistry\nBaseInspectionRule x 22] as RR
+}
+
+WH --> Q
+SCH --> Q
+UI --> Q
+Q --> R
+R --> KI : solution folder
+KI --> SP
+KI --> RR
+KI --> G : report
+G --> S : report + guidelines
+S --> W : Reports / Generated Docs
+@enduml

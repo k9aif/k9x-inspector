@@ -1,0 +1,18 @@
+# K9X Inspector — single container: FastAPI (API + UI), the inspection worker and scheduler.
+# k9-aif installs from PyPI (requirements.txt). Settings come from .env at run time.
+# runtime/ (inspector.db, repository clones) is a mounted volume — see build-run.sh.
+FROM registry.access.redhat.com/ubi9/python-311:latest
+USER root
+RUN dnf install -y git && dnf clean all
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir -r requirements.txt
+COPY . .
+RUN mkdir -p /app/runtime && chown -R 1001:0 /app/runtime && chmod -R g+rwX /app/runtime
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
+    INSPECTOR_DB_PATH=/app/runtime/inspector.db INSPECTOR_WORKDIR=/app/runtime/repos
+EXPOSE 8115
+HEALTHCHECK --interval=30s --timeout=8s --start-period=20s --retries=3 \
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8115/api/health')" || exit 1
+USER 1001
+CMD ["uvicorn", "inspector.api:app", "--host", "0.0.0.0", "--port", "8115", "--log-level", "info"]

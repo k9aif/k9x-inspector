@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>K9X Inspector — Sign in</title>
+<link rel="icon" href="/static/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root { color-scheme: dark; --cyan:#38bdf8; --blue:#3b82f6; --teal:#22d3ee; --ink:#e6f0ff; --mute:#8fa3c4;
+          --glass:rgba(10,26,52,.55); --edge:rgba(96,165,250,.35); --ok:#34d399; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; color: var(--ink); overflow-x: hidden; font: 14px/1.5 Inter, system-ui, sans-serif;
+         background: radial-gradient(1200px 700px at 70% 30%, #0b2a55 0%, #061633 45%, #030a1a 100%); }
+  canvas#bg { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
+  .grid { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .5;
+          background-image: linear-gradient(rgba(56,189,248,.07) 1px, transparent 1px),
+                            linear-gradient(90deg, rgba(56,189,248,.07) 1px, transparent 1px);
+          background-size: 44px 44px; mask-image: radial-gradient(ellipse at center, #000 30%, transparent 80%);
+          -webkit-mask-image: radial-gradient(ellipse at center, #000 30%, transparent 80%); }
+
+  /* floating glass panels */
+  .panel { position: fixed; z-index: 1; background: var(--glass); border: 1px solid var(--edge); border-radius: 10px;
+           backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 12px 14px;
+           box-shadow: 0 0 0 1px rgba(56,189,248,.06), 0 18px 60px rgba(0,0,0,.45), 0 0 30px rgba(56,189,248,.12) inset;
+           animation: float 9s ease-in-out infinite; pointer-events: none; }
+  .panel h3 { margin: 0 0 9px; font: 600 10.5px/1 Inter, sans-serif; letter-spacing: .18em; color: #cfe3ff; text-transform: uppercase; }
+  @keyframes float { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-8px) } }
+  .p-arch  { top: 6vh;  left: 3vw;  width: 290px; animation-delay: -2s; }
+  .p-check { top: 6vh;  right: 3vw; width: 250px; animation-delay: -5s; }
+  .p-code  { bottom: 8vh; left: 3vw; width: 380px; animation-delay: -1s; }
+  .p-score { bottom: 9vh; right: 3vw; width: 210px; animation-delay: -4s; text-align: center; }
+  .p-gov   { bottom: 3vh; left: 50%; width: 520px; margin-left: -260px; animation-delay: -6s; }
+  .flow { display: flex; flex-direction: column; gap: 6px; font: 500 10.5px/1 Inter, sans-serif; }
+  .flow .row { display: flex; align-items: center; gap: 6px; }
+  .box { border: 1px solid rgba(147,197,253,.55); border-radius: 5px; padding: 6px 8px; color: #dbeafe; background: rgba(30,64,120,.35); white-space: nowrap; }
+  .arr { color: var(--cyan); }
+  .check li { list-style: none; display: flex; justify-content: space-between; gap: 10px; padding: 5px 0;
+              border-bottom: 1px solid rgba(96,165,250,.14); font-size: 12px; color: #dbeafe; }
+  .check ul { margin: 0; padding: 0; } .check li:last-child { border: 0; }
+  .check b { color: var(--ok); font-weight: 600; }
+  pre { margin: 0; font: 11px/1.55 "JetBrains Mono", ui-monospace, monospace; color: #cbd5e1; white-space: pre; }
+  pre .k { color: #7dd3fc } pre .f { color: #a5b4fc } pre .s { color: #86efac } pre .n { color: #475569 }
+  .gauge { width: 120px; height: 120px; margin: 4px auto 6px; }
+  .gauge .num { font: 800 30px Orbitron, sans-serif; fill: #e0f2fe; }
+  .gauge .den { font: 500 11px Inter, sans-serif; fill: #93c5fd; }
+  .score-l { font-size: 11px; letter-spacing: .14em; color: var(--ok); text-transform: uppercase; }
+  .chain { display: flex; justify-content: space-between; align-items: center; gap: 4px; }
+  .step { text-align: center; font: 600 10.5px/1.3 Inter, sans-serif; color: #dbeafe; letter-spacing: .08em; text-transform: uppercase; }
+  .step small { display: block; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--mute); font-size: 10px; }
+  .step .ic { width: 38px; height: 38px; margin: 0 auto 5px; border: 1px solid rgba(147,197,253,.55); border-radius: 8px;
+              display: grid; place-items: center; background: rgba(30,64,120,.35); }
+  .step svg { width: 20px; height: 20px; stroke: #93c5fd; fill: none; stroke-width: 1.6; }
+
+  /* centre: title + sign-in */
+  main { position: relative; z-index: 2; min-height: 100%; display: flex; flex-direction: column; align-items: center;
+         justify-content: center; padding: 32px 16px 40px; }
+  .mark { width: 74px; height: 74px; filter: drop-shadow(0 0 22px rgba(56,189,248,.6)); }
+  h1 { margin: 6px 0 0; text-align: center; font: 900 clamp(30px, 7vw, 58px)/1.02 Orbitron, sans-serif; letter-spacing: .06em;
+       background: linear-gradient(90deg, #60a5fa 0%, #e0f2fe 45%, #67e8f9 75%, #22d3ee 100%);
+       -webkit-background-clip: text; background-clip: text; color: transparent;
+       filter: drop-shadow(0 0 26px rgba(56,189,248,.45)); }
+  .tag { margin: 10px 0 24px; color: #b6c8e6; font-size: 12px; letter-spacing: .2em; text-transform: uppercase; text-align: center; }
+  .card { width: min(380px, 100%); padding: 24px 26px 18px; border-radius: 12px;
+          background: linear-gradient(180deg, rgba(12,32,66,.82), rgba(6,16,36,.86)); border: 1px solid var(--edge);
+          backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 24px 80px rgba(0,0,0,.55); }
+  label { display: block; margin: 0 0 6px; font-size: 11px; letter-spacing: .14em; color: var(--mute); text-transform: uppercase; }
+  input { width: 100%; height: 40px; padding: 0 12px; margin-bottom: 14px; border-radius: 7px; font: inherit; color: var(--ink);
+          background: rgba(3,10,26,.75); border: 1px solid rgba(96,165,250,.25); outline: none; }
+  input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(56,189,248,.2); }
+  button.go { width: 100%; height: 42px; border: 0; border-radius: 7px; cursor: pointer; color: #fff;
+              font: 600 14.5px Inter, sans-serif; background: linear-gradient(90deg, #2563eb, #0891b2);
+              box-shadow: 0 8px 28px rgba(14,165,233,.35); }
+  button.go:hover { filter: brightness(1.1); }
+  .err { min-height: 18px; margin-top: 10px; color: #fca5a5; font-size: 12.5px; text-align: center; }
+  .demo { margin-top: 8px; padding: 9px 12px; border-radius: 7px; font-size: 12.5px; color: #cfe3ff;
+          background: rgba(56,189,248,.08); border: 1px solid rgba(56,189,248,.25); text-align: center; }
+  .demo code { font-family: "JetBrains Mono", monospace; color: #7dd3fc; }
+  .demo small { display: block; color: var(--mute); margin-top: 3px; }
+  .foot { margin-top: 18px; font-size: 12px; color: var(--mute); text-align: center; }
+  .foot a { color: #93c5fd; text-decoration: none; }
+  @media (max-width: 1180px) { .p-code, .p-gov { display: none; } }
+  @media (max-width: 900px) { .panel { display: none; } }
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="grid"></div>
+
+<div class="panel p-arch" aria-hidden="true">
+  <h3>Solution architecture</h3>
+  <div class="flow">
+    <div class="row"><span class="box">Router</span><span class="arr">→</span><span class="box">Orchestrator</span><span class="arr">→</span><span class="box">Squad</span></div>
+    <div class="row"><span class="box">Agent ABB</span><span class="arr">→</span><span class="box">llm_invoke()</span><span class="arr">→</span><span class="box">Model</span></div>
+    <div class="row"><span class="box">Shield</span><span class="arr">⇄</span><span class="box">Guardian</span><span class="arr">⇄</span><span class="box">K9X HIL</span></div>
+  </div>
+</div>
+
+<div class="panel p-check check" aria-hidden="true">
+  <h3>Conformance checklist</h3>
+  <ul>
+    <li>ABB contracts <b>✓</b></li>
+    <li>Three-layer decoupling <b>✓</b></li>
+    <li>Single model path <b>✓</b></li>
+    <li>Governance by construction <b>✓</b></li>
+    <li>Kafka ownership <b>✓</b></li>
+    <li>Secrets in .env <b>✓</b></li>
+  </ul>
+</div>
+
+<div class="panel p-code" aria-hidden="true">
+  <h3>Code analysis</h3>
+<pre><span class="n">1</span> <span class="k">class</span> <span class="f">ClaimsAgent</span>(BaseAgent):
+<span class="n">2</span>     <span class="k">def</span> <span class="f">execute</span>(self, payload):
+<span class="n">3</span>         <span class="k">try</span>:
+<span class="n">4</span>             resp = <span class="f">llm_invoke</span>(self.config, InferenceRequest(
+<span class="n">5</span>                 prompt=payload[<span class="s">"text"</span>], task_type=<span class="s">"extraction"</span>))
+<span class="n">6</span>         <span class="k">except</span> RuntimeError <span class="k">as</span> exc:
+<span class="n">7</span>             <span class="k">return</span> {<span class="s">"status"</span>: <span class="s">"failed"</span>, <span class="s">"reason"</span>: str(exc)}
+<span class="n">8</span>         <span class="k">return</span> {<span class="s">"output"</span>: resp}</pre>
+</div>
+
+<div class="panel p-score" aria-hidden="true">
+  <h3>Compliance score</h3>
+  <svg class="gauge" viewBox="0 0 120 120">
+    <circle cx="60" cy="60" r="50" stroke="rgba(96,165,250,.18)" stroke-width="9" fill="none"/>
+    <circle cx="60" cy="60" r="50" stroke="url(#g)" stroke-width="9" fill="none" stroke-linecap="round"
+            stroke-dasharray="289 314" transform="rotate(-90 60 60)"/>
+    <defs><linearGradient id="g"><stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>
+    <text class="num" x="60" y="66" text-anchor="middle">92</text>
+    <text class="den" x="60" y="84" text-anchor="middle">rules pass %</text>
+  </svg>
+  <div class="score-l">Compliant</div>
+</div>
+
+<div class="panel p-gov" aria-hidden="true">
+  <h3>Framework controls inspected</h3>
+  <div class="chain">
+    <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h7"/></svg></div>Contracts<small>ABB / SBB</small></div>
+    <span class="arr">→</span>
+    <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg></div>Govern<small>Shield + Guardian</small></div>
+    <span class="arr">→</span>
+    <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></div>Zero Trust<small>identity + policy</small></div>
+    <span class="arr">→</span>
+    <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg></div>Inspect<small>every push</small></div>
+    <span class="arr">→</span>
+    <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h4"/></svg></div>Guide<small>generated docs</small></div>
+  </div>
+</div>
+
+<main>
+  <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+    <defs><linearGradient id="m" x1="0" x2="1"><stop offset="0" stop-color="#60a5fa"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>
+    <circle cx="27" cy="27" r="17" fill="rgba(56,189,248,.10)" stroke="url(#m)" stroke-width="4"/>
+    <path d="M39.5 39.5L56 56" stroke="url(#m)" stroke-width="6" stroke-linecap="round"/>
+    <path d="M19 27l6 6 11-12" fill="none" stroke="#e0f2fe" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <h1>K9X INSPECTOR</h1>
+  <div class="tag">Continuous conformance for K9-AIF solutions</div>
+
+  <form class="card" id="f" autocomplete="on">
+    <label for="u">Username</label>
+    <input id="u" name="username" autocomplete="username" required>
+    <label for="p">Password</label>
+    <input id="p" name="password" type="password" autocomplete="current-password" required>
+    <button class="go" type="submit">Sign in</button>
+    <div class="err" id="err"></div>
+    <div class="demo" id="demo" hidden></div>
+  </form>
+  <div class="foot"><a href="/about">About K9X Inspector</a></div>
+</main>
+
+<script>
+// drifting particles + data streams (decorative)
+(() => {
+  const c = document.getElementById('bg'), x = c.getContext('2d');
+  let w, h, pts = [];
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function size() {
+    w = c.width = innerWidth * devicePixelRatio; h = c.height = innerHeight * devicePixelRatio;
+    pts = Array.from({length: Math.min(140, Math.floor(innerWidth / 9))}, () => ({
+      x: Math.random() * w, y: Math.random() * h, r: (Math.random() * 1.6 + .4) * devicePixelRatio,
+      v: (Math.random() * .35 + .08) * devicePixelRatio, a: Math.random() * .6 + .2 }));
+  }
+  function draw() {
+    x.clearRect(0, 0, w, h);
+    for (const p of pts) {
+      x.fillStyle = `rgba(56,189,248,${p.a})`; x.beginPath(); x.arc(p.x, p.y, p.r, 0, 6.283); x.fill();
+      if (!reduce) { p.y -= p.v; if (p.y < -5) { p.y = h + 5; p.x = Math.random() * w; } }
+    }
+    x.strokeStyle = 'rgba(96,165,250,.07)'; x.lineWidth = devicePixelRatio;
+    for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < Math.min(pts.length, i + 6); j++) {
+      const a = pts[i], b = pts[j], d = Math.hypot(a.x - b.x, a.y - b.y);
+      if (d < 120 * devicePixelRatio) { x.beginPath(); x.moveTo(a.x, a.y); x.lineTo(b.x, b.y); x.stroke(); }
+    }
+    if (!reduce) requestAnimationFrame(draw);
+  }
+  addEventListener('resize', size); size(); draw();
+})();
+
+fetch('/api/public').then(r => r.json()).then(d => {
+  if (!d.demo) return;
+  const el = document.getElementById('demo');
+  el.innerHTML = `Demo login: <code>${d.demo.user}</code> / <code>${d.demo.password}</code>
+    <small>Open public demonstration — inspect any public GitHub repository built on K9-AIF.</small>`;
+  el.hidden = false;
+}).catch(() => {});
+
+document.getElementById('f').addEventListener('submit', async e => {
+  e.preventDefault();
+  const err = document.getElementById('err'); err.textContent = '';
+  const r = await fetch('/api/login', {method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({username: document.getElementById('u').value, password: document.getElementById('p').value})});
+  if (r.ok) { location.replace('/'); return; }
+  const j = await r.json().catch(() => ({}));
+  err.textContent = j.detail || 'Sign-in failed';
+});
+</script>
+</body>
+</html>

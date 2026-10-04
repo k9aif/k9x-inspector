@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>K9X Inspector</title>
+<link rel="icon" href="/static/logo.svg" type="image/svg+xml">
+<style>
+  :root { --bg:#f5f7fb; --card:#fff; --ink:#152033; --mute:#5b6a82; --line:#dfe5ee; --accent:#1d6fd8;
+          --crit:#b42318; --viol:#d4561c; --warn:#b7791f; --reco:#2f6fb5; --ok:#1e8449; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0b1324; --card:#111c33; --ink:#e5edf9; --mute:#93a3bf; --line:#22314f; --accent:#5aa9ff;
+            --crit:#ff6b5e; --viol:#ff9a5c; --warn:#f2c14e; --reco:#7cb7ff; --ok:#5fd38d; }
+  }
+  * { box-sizing: border-box; } [hidden] { display: none !important; }
+  body { margin: 0; font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); }
+  header { padding: 12px 24px; border-bottom: 1px solid var(--line); display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  header h1 { font-size: 18px; margin: 0; display: flex; align-items: center; gap: 8px; }
+  header h1 svg { width: 24px; height: 24px; }
+  .sub { color: var(--mute); font-size: 12.5px; }
+  .spacer { flex: 1; }
+  .pill { font-size: 12px; padding: 3px 10px; border-radius: 12px; border: 1px solid var(--line); color: var(--mute); }
+  .pill b { color: var(--ink); }
+  button, .btn { font: inherit; border: 1px solid var(--line); background: var(--card); color: var(--ink); padding: 6px 12px;
+                 border-radius: 6px; cursor: pointer; text-decoration: none; display: inline-block; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button:disabled { opacity: .5; cursor: default; }
+  main { padding: 14px 24px 48px; max-width: 1320px; margin: 0 auto; }
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 14px; }
+  .tabs button.on { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-bottom: 12px; }
+  .stat .k { color: var(--mute); font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; }
+  .stat .v { font-size: 22px; font-weight: 700; margin-top: 2px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 12px; color: var(--mute); text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
+  tr.click { cursor: pointer; } tr.click:hover td { background: rgba(90,169,255,.07); }
+  .wrap { overflow-x: auto; background: var(--card); border: 1px solid var(--line); border-radius: 8px; }
+  .sev { font-size: 11.5px; font-weight: 700; padding: 2px 8px; border-radius: 10px; color: #fff; text-transform: uppercase; white-space: nowrap; }
+  .sev.critical { background: var(--crit); } .sev.violation { background: var(--viol); }
+  .sev.warning { background: var(--warn); } .sev.recommendation { background: var(--reco); }
+  .verdict { font-weight: 700; } .verdict.NON-COMPLIANT { color: var(--crit); }
+  .verdict.COMPLIANT { color: var(--ok); } .verdict.WITH { color: var(--warn); }
+  code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
+  .fix { color: var(--mute); font-size: 12.5px; margin-top: 3px; }
+  form.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: end; }
+  form.row label { display: flex; flex-direction: column; font-size: 12px; color: var(--mute); gap: 4px; }
+  input[type=text] { font: inherit; padding: 6px 9px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); color: var(--ink); min-width: 160px; }
+  input.wide { min-width: 360px; }
+  .msg { margin-top: 8px; font-size: 13px; } .msg.err { color: var(--crit); }
+  .filters { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+  .filters button.on { border-color: var(--accent); color: var(--accent); }
+  .md { line-height: 1.6; } .md h1 { font-size: 22px; } .md h2 { font-size: 18px; margin-top: 22px; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+  .md h3 { font-size: 15.5px; margin-top: 18px; } .md pre { background: rgba(127,140,170,.12); padding: 10px 12px; border-radius: 6px; overflow-x: auto; }
+  .md table { margin: 8px 0; } .md td, .md th { border: 1px solid var(--line); }
+  .status-running { color: var(--accent); } .status-failed { color: var(--crit); }
+  .arch img { max-width: 100%; height: auto; background: #fff; border-radius: 8px; }
+  .muted { color: var(--mute); }
+  @media (max-width: 700px) { header, main { padding-left: 14px; padding-right: 14px; } input.wide { min-width: 100%; } }
+</style>
+</head>
+<body>
+<header>
+  <h1><svg viewBox="0 0 64 64"><circle cx="27" cy="27" r="17" fill="none" stroke="#1d6fd8" stroke-width="5"/><path d="M39.5 39.5L56 56" stroke="#0891b2" stroke-width="7" stroke-linecap="round"/><path d="M19 27l6 6 11-12" fill="none" stroke="#1e8449" stroke-width="4" stroke-linecap="round"/></svg>K9X Inspector</h1>
+  <span class="sub">Continuous conformance for K9-AIF solutions</span>
+  <span class="spacer"></span>
+  <span class="pill" id="sched"></span>
+  <span class="pill" id="who"></span>
+  <a class="btn" href="/about">About</a>
+  <button id="out">Sign out</button>
+</header>
+<main>
+  <div class="tabs" id="tabs">
+    <button data-t="apps" class="on">Applications</button>
+    <button data-t="inspect">Inspect</button>
+    <button data-t="reports">Reports</button>
+    <button data-t="docs">Generated Docs</button>
+    <button data-t="rules">Rules</button>
+    <button data-t="arch">Architecture</button>
+  </div>
+
+  <section id="t-apps">
+    <div class="card" id="addapp" hidden>
+      <form class="row" id="fadd">
+        <label>Name<input type="text" id="an" required></label>
+        <label>GitHub repository<input type="text" class="wide" id="ar" placeholder="https://github.com/owner/repo" required></label>
+        <label>Branch<input type="text" id="ab" value="main"></label>
+        <label>Subfolder<input type="text" id="as" placeholder="(whole repository)"></label>
+        <button class="primary">Track application</button>
+      </form>
+      <div class="msg" id="addmsg"></div>
+    </div>
+    <div class="wrap"><table id="apps"><thead><tr><th>Application</th><th>Repository</th><th>Latest inspection</th><th>Verdict</th><th>Score</th><th>Findings</th><th></th></tr></thead><tbody></tbody></table></div>
+    <p class="sub">Tracked applications come from <code>INSPECTOR_APPS</code> in .env (and any the admin adds here). Each is re-inspected on every push (GitHub webhook) and on the schedule when its branch has moved.</p>
+  </section>
+
+  <section id="t-inspect" hidden>
+    <div class="card">
+      <form class="row" id="fins">
+        <label>GitHub repository<input type="text" class="wide" id="ir" placeholder="https://github.com/k9aif/dow-k9x"></label>
+        <label>Branch<input type="text" id="ib" value="main"></label>
+        <label>Subfolder<input type="text" id="is" placeholder="(whole repository)"></label>
+        <label id="ipl" hidden>or server folder<input type="text" class="wide" id="ip" placeholder="/path/to/solution"></label>
+        <button class="primary">Inspect</button>
+      </form>
+      <div class="msg" id="insmsg"></div>
+      <p class="sub">The code is read, never run: Python is parsed to syntax trees and YAML is loaded as data. Public repositories only, unless the server holds a read-only token.</p>
+    </div>
+    <div id="live"></div>
+  </section>
+
+  <section id="t-reports" hidden>
+    <div class="wrap"><table id="hist"><thead><tr><th>#</th><th>Source</th><th>Trigger</th><th>Commit</th><th>Status</th><th>Verdict</th><th>Score</th><th>Findings</th><th>Started</th></tr></thead><tbody></tbody></table></div>
+    <div id="report"></div>
+  </section>
+
+  <section id="t-docs" hidden>
+    <div class="card">
+      <div class="row" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <select id="docsel" style="font:inherit;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--ink);max-width:100%"></select>
+        <button data-doc="guidelines">Guidelines document</button>
+        <button data-doc="report">Compliance report</button>
+        <a class="btn" id="dl" href="#" download>Download .md</a>
+        <a class="btn" id="dlj" href="#" download>Download .json</a>
+      </div>
+    </div>
+    <div class="card md" id="doc"><p class="muted">Pick an inspection.</p></div>
+  </section>
+
+  <section id="t-rules" hidden>
+    <p class="sub">What an inspection checks. Each rule is a framework <code>BaseInspectionRule</code> (k9-aif <code>k9_inspect</code>); organisations add their own with <code>InspectionRuleRegistry.register()</code>.</p>
+    <div class="wrap"><table id="rules"><thead><tr><th>Rule</th><th>Category</th><th>Severity</th><th>What it checks and why</th></tr></thead><tbody></tbody></table></div>
+  </section>
+
+  <section id="t-arch" hidden>
+    <div class="card arch"><img src="/static/architecture.svg" alt="K9X Inspector architecture"></div>
+  </section>
+</main>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let ME = null, SEL = null, DOCKIND = 'guidelines';
+
+async function api(path, opt = {}) {
+  const r = await fetch(path, {headers: {'Content-Type': 'application/json'}, ...opt});
+  if (r.status === 401) { location.replace('/login'); throw new Error('signed out'); }
+  const ct = r.headers.get('content-type') || '';
+  const body = ct.includes('json') ? await r.json() : await r.text();
+  if (!r.ok) throw new Error(body.detail || body || r.statusText);
+  return body;
+}
+const when = t => t ? new Date(t).toLocaleString() : '';
+const cnt = c => c ? `<span class="sev critical">${c.critical}</span> <span class="sev violation">${c.violation}</span> <span class="sev warning">${c.warning}</span> <span class="sev recommendation">${c.recommendation}</span>` : '';
+const verdict = v => v ? `<span class="verdict ${esc(v.split(' ')[0])} ${v.includes('WITH') ? 'WITH' : ''}">${esc(v)}</span>` : '';
+
+// ── tabs ──
+document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => show(b.dataset.t));
+function show(t) {
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+  document.querySelectorAll('main > section').forEach(s => s.hidden = s.id !== 't-' + t);
+  ({apps: loadApps, reports: loadHist, docs: loadDocs, rules: loadRules})[t]?.();
+  try { localStorage.setItem('k9xi-tab', t); } catch {}
+}
+
+// ── header ──
+async function header() {
+  ME = await api('/api/me');
+  $('#who').innerHTML = `<b>${esc(ME.user)}</b> · ${ME.role === 'admin' ? 'admin' : 'demo (read-only)'}`;
+  $('#addapp').hidden = ME.role !== 'admin';
+  $('#ipl').hidden = !ME.allow_local;
+  const s = await api('/api/status');
+  $('#sched').innerHTML = `Schedule <b>${esc(s.schedule)}</b>${s.next_schedule ? ' · next ' + new Date(s.next_schedule * 1000).toLocaleTimeString() : ''} · webhook <b>${s.webhook ? 'on' : 'off'}</b>${s.current ? ' · running #' + s.current : ''}${s.queued ? ' · ' + s.queued + ' queued' : ''}`;
+}
+$('#out').onclick = async () => { await fetch('/api/logout', {method: 'POST'}); location.replace('/login'); };
+
+// ── applications ──
+async function loadApps() {
+  const apps = await api('/api/apps');
+  $('#apps tbody').innerHTML = apps.map(a => {
+    const l = a.latest || {};
+    return `<tr><td><b>${esc(a.name)}</b><div class="sub">${a.origin === 'env' ? '.env' : 'added in UI'}</div></td>
+      <td class="mono"><a href="${esc(a.repo)}" target="_blank" rel="noopener">${esc(a.repo.replace('https://github.com/', ''))}</a><div class="sub">${esc(a.branch)}${a.subdir ? ' · ' + esc(a.subdir) : ''}</div></td>
+      <td>${l.id ? `<a href="#" data-r="${l.id}">#${l.id}</a> <span class="status-${l.status}">${l.status}</span><div class="sub">${esc(l.trigger)} · ${when(l.started_at)}</div>` : '<span class="muted">not yet</span>'}</td>
+      <td>${verdict(l.verdict)}</td><td>${l.score ?? ''}${l.score != null ? '%' : ''}</td><td>${cnt(l.counts)}</td>
+      <td><button data-i="${a.id}">Inspect now</button>${ME?.role === 'admin' && a.origin !== 'env' ? ` <button data-d="${a.id}">Remove</button>` : ''}</td></tr>`;
+  }).join('') || '<tr><td colspan="7" class="muted">No applications tracked yet.</td></tr>';
+  $('#apps').querySelectorAll('[data-i]').forEach(b => b.onclick = async () => {
+    b.disabled = true; try { const r = await api(`/api/apps/${b.dataset.i}/inspect`, {method: 'POST'}); follow(r.id); } catch (e) { alert(e.message); } });
+  $('#apps').querySelectorAll('[data-d]').forEach(b => b.onclick = async () => {
+    if (confirm('Stop tracking this application?')) { await api(`/api/apps/${b.dataset.d}`, {method: 'DELETE'}); loadApps(); } });
+  $('#apps').querySelectorAll('[data-r]').forEach(a => a.onclick = e => { e.preventDefault(); show('reports'); openReport(+a.dataset.r); });
+}
+$('#fadd').onsubmit = async e => {
+  e.preventDefault(); const m = $('#addmsg'); m.className = 'msg';
+  try {
+    await api('/api/apps', {method: 'POST', body: JSON.stringify({name: $('#an').value, repo: $('#ar').value, branch: $('#ab').value, subdir: $('#as').value})});
+    m.textContent = 'Tracked.'; e.target.reset(); $('#ab').value = 'main'; loadApps();
+  } catch (x) { m.className = 'msg err'; m.textContent = x.message; }
+};
+
+// ── ad-hoc inspection ──
+$('#fins').onsubmit = async e => {
+  e.preventDefault(); const m = $('#insmsg'); m.className = 'msg'; m.textContent = 'Queued…';
+  try {
+    const r = await api('/api/inspect', {method: 'POST', body: JSON.stringify({repo: $('#ir').value.trim(), branch: $('#ib').value.trim(), subdir: $('#is').value.trim(), path: ($('#ip')?.value || '').trim()})});
+    follow(r.id, '#live');
+  } catch (x) { m.className = 'msg err'; m.textContent = x.message; }
+};
+async function follow(id, target) {
+  if (!target) { show('reports'); target = '#report'; }
+  const m = $('#insmsg');
+  for (let i = 0; i < 300; i++) {
+    const d = await api(`/api/inspections/${id}`);
+    if (d.status !== 'running') { if (m) m.textContent = ''; renderReport(d, target); header(); return; }
+    $(target).innerHTML = `<div class="card">Inspection #${id} running… <span class="sub">${esc(d.source)}</span></div>`;
+    await new Promise(r => setTimeout(r, 2000));
+  }
+}
+
+// ── reports ──
+async function loadHist() {
+  const rows = await api('/api/inspections?limit=200');
+  $('#hist tbody').innerHTML = rows.map(r => `<tr class="click" data-id="${r.id}"><td>${r.id}</td><td class="mono">${esc(r.source)}</td><td>${esc(r.trigger)}</td>
+    <td class="mono">${esc(r.commit || '')}</td><td class="status-${r.status}">${r.status}</td><td>${verdict(r.verdict)}</td>
+    <td>${r.score ?? ''}${r.score != null ? '%' : ''}</td><td>${cnt(r.counts)}</td><td>${when(r.started_at)}</td></tr>`).join('')
+    || '<tr><td colspan="9" class="muted">No inspections yet.</td></tr>';
+  $('#hist').querySelectorAll('tr.click').forEach(tr => tr.onclick = () => openReport(+tr.dataset.id));
+}
+async function openReport(id) { renderReport(await api(`/api/inspections/${id}`), '#report'); }
+function renderReport(d, target) {
+  if (d.status === 'failed') { $(target).innerHTML = `<div class="card"><b>Inspection #${d.id} failed</b><div class="msg err">${esc(d.error)}</div></div>`; return; }
+  const r = d.report; if (!r) return;
+  let filt = 'all';
+  const draw = () => {
+    const fs = r.findings.filter(f => filt === 'all' || f.severity === filt);
+    $(target).innerHTML = `
+      <div class="card"><div style="display:flex;gap:12px;flex-wrap:wrap;align-items:baseline">
+        <b>Inspection #${d.id}</b><span class="mono">${esc(r.source)}</span>${r.commit ? `<span class="mono sub">@ ${esc(r.commit)}</span>` : ''}
+        <span class="sub">k9-aif ${esc(r.framework_version)} · ${when(r.inspected_at)}</span><span class="spacer" style="flex:1"></span>
+        <a class="btn" href="/api/inspections/${d.id}/guidelines.md" target="_blank">Guidelines</a>
+        <a class="btn" href="/api/inspections/${d.id}/report.md" target="_blank">Report .md</a></div></div>
+      <div class="cards">
+        <div class="card stat"><div class="k">Verdict</div><div class="v">${verdict(r.verdict)}</div></div>
+        <div class="card stat"><div class="k">Rules passing</div><div class="v">${r.score}%</div><div class="sub">of ${r.rules.length}</div></div>
+        <div class="card stat"><div class="k">Critical</div><div class="v" style="color:var(--crit)">${r.counts.critical}</div></div>
+        <div class="card stat"><div class="k">Violations</div><div class="v" style="color:var(--viol)">${r.counts.violation}</div></div>
+        <div class="card stat"><div class="k">Warnings</div><div class="v" style="color:var(--warn)">${r.counts.warning}</div></div>
+        <div class="card stat"><div class="k">Recommendations</div><div class="v" style="color:var(--reco)">${r.counts.recommendation}</div></div>
+        <div class="card stat"><div class="k">Files</div><div class="v">${r.files.python}</div><div class="sub">Python · ${r.files.yaml} YAML</div></div>
+      </div>
+      <div class="filters">${['all', 'critical', 'violation', 'warning', 'recommendation'].map(s => `<button data-f="${s}" class="${s === filt ? 'on' : ''}">${s}</button>`).join('')}</div>
+      <div class="wrap"><table><thead><tr><th>Severity</th><th>Rule</th><th>Where</th><th>Finding</th></tr></thead><tbody>
+      ${fs.map(f => `<tr><td><span class="sev ${f.severity}">${f.severity}</span></td><td class="mono">${esc(f.rule_id)}<div class="sub">${esc(f.category)}</div></td>
+        <td class="mono">${esc(f.file)}${f.line ? ':' + f.line : ''}</td>
+        <td>${esc(f.message)}${f.snippet ? `<div class="mono sub">${esc(f.snippet)}</div>` : ''}<div class="fix">Fix: ${esc(f.fix)}</div></td></tr>`).join('')
+        || '<tr><td colspan="4" class="muted">No findings.</td></tr>'}</tbody></table></div>`;
+    $(target).querySelectorAll('[data-f]').forEach(b => b.onclick = () => { filt = b.dataset.f; draw(); });
+  };
+  draw();
+}
+
+// ── generated docs ──
+async function loadDocs() {
+  const rows = (await api('/api/inspections?limit=200')).filter(r => r.status === 'done');
+  const sel = $('#docsel');
+  sel.innerHTML = rows.map(r => `<option value="${r.id}">#${r.id} · ${esc(r.source)} · ${esc(r.verdict)} · ${when(r.started_at)}</option>`).join('');
+  if (rows.length) { SEL = SEL && rows.some(r => r.id === SEL) ? SEL : rows[0].id; sel.value = SEL; showDoc(); }
+  sel.onchange = () => { SEL = +sel.value; showDoc(); };
+}
+document.querySelectorAll('[data-doc]').forEach(b => b.onclick = () => { DOCKIND = b.dataset.doc; showDoc(); });
+async function showDoc() {
+  if (!SEL) return;
+  const url = `/api/inspections/${SEL}/${DOCKIND}.md`;
+  $('#dl').href = url; $('#dlj').href = `/api/inspections/${SEL}/report.json`;
+  $('#doc').innerHTML = md(await api(url));
+}
+// minimal Markdown → HTML for the generated documents (headings, lists, code, tables, emphasis)
+function md(src) {
+  const out = []; let inCode = false, list = false, table = null;
+  const inline = s => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/\*([^*]+)\*/g, '<i>$1</i>');
+  const flush = () => { if (list) { out.push('</ul>'); list = false; } if (table) { out.push('<table>' + table.join('') + '</table>'); table = null; } };
+  for (const line of src.split('\n')) {
+    if (line.startsWith('```')) { flush(); out.push(inCode ? '</pre>' : '<pre>'); inCode = !inCode; continue; }
+    if (inCode) { out.push(esc(line) + '\n'); continue; }
+    const h = line.match(/^(#{1,4})\s+(.*)/);
+    if (h) { flush(); out.push(`<h${h[1].length}>${inline(h[2])}</h${h[1].length}>`); continue; }
+    if (/^\s*\|/.test(line)) { if (list) { out.push('</ul>'); list = false; }
+      if (/^\s*\|[\s|:-]+\|\s*$/.test(line)) continue;
+      const cells = line.trim().replace(/^\||\|$/g, '').split('|').map(c => inline(c.trim()));
+      if (!table) { table = ['<tr>' + cells.map(c => `<th>${c}</th>`).join('') + '</tr>']; } else table.push('<tr>' + cells.map(c => `<td>${c}</td>`).join('') + '</tr>'); continue; }
+    const li = line.match(/^(\s*)[-*]\s+(.*)/);
+    if (li) { if (table) { out.push('<table>' + table.join('') + '</table>'); table = null; } if (!list) { out.push('<ul>'); list = true; } out.push(`<li${li[1].length ? ' style="margin-left:18px"' : ''}>${inline(li[2])}</li>`); continue; }
+    flush(); if (line.trim()) out.push(`<p>${inline(line)}</p>`);
+  }
+  flush(); if (inCode) out.push('</pre>');
+  return out.join('');
+}
+
+// ── rules ──
+async function loadRules() {
+  const rules = await api('/api/rules');
+  $('#rules tbody').innerHTML = rules.map(r => `<tr><td class="mono"><b>${esc(r.rule_id)}</b><div>${esc(r.title)}</div></td><td>${esc(r.category)}</td>
+    <td><span class="sev ${r.severity}">${r.severity}</span></td><td>${esc(r.description)}<div class="fix">Fix: ${esc(r.fix)}</div></td></tr>`).join('');
+}
+
+(async () => {
+  await header();
+  let t = 'apps'; try { t = localStorage.getItem('k9xi-tab') || 'apps'; } catch {}
+  show(t);
+  setInterval(() => { header(); if (!$('#t-apps').hidden) loadApps(); }, 15000);
+})();
+</script>
+</body>
+</html>

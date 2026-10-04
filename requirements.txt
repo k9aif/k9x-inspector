@@ -1,0 +1,6 @@
+k9-aif>=1.15.0
+fastapi>=0.111
+uvicorn[standard]>=0.30
+python-dotenv>=1.0
+pyyaml>=6.0
+sqlalchemy>=2.0

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About K9X Inspector</title>
+<link rel="icon" href="/static/logo.svg" type="image/svg+xml">
+<style>
+  :root { --bg:#f5f7fb; --card:#fff; --ink:#152033; --mute:#5b6a82; --line:#dfe5ee; --accent:#1d6fd8; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0b1324; --card:#111c33; --ink:#e5edf9; --mute:#93a3bf; --line:#22314f; --accent:#5aa9ff; } }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 28px 20px 60px; }
+  h1 { display: flex; align-items: center; gap: 10px; margin: 0 0 4px; } h1 img { width: 36px; }
+  h2 { margin-top: 28px; font-size: 18px; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+  .sub { color: var(--mute); }
+  code { font-family: ui-monospace, Menlo, monospace; font-size: 13px; }
+  table { border-collapse: collapse; width: 100%; } td, th { border-bottom: 1px solid var(--line); padding: 7px 8px; text-align: left; vertical-align: top; }
+  a { color: var(--accent); }
+  .back { display: inline-block; margin-bottom: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="/">← K9X Inspector</a>
+  <h1><img src="/static/logo.svg" alt="">K9X Inspector</h1>
+  <div class="sub">Continuous conformance inspection for solutions built on the K9-AIF framework.</div>
+
+  <h2>What it does</h2>
+  <p>K9-AIF's value is architectural: ABB contracts, three-layer decoupling, one governed model path, governance by
+  construction with k9x Shield and Granite Guardian, Zero Trust at the orchestrator, and Kafka ownership. A solution
+  (SBB) keeps those properties only if its code keeps to them. Inspector checks that, every time the code changes.</p>
+  <p>Point it at a GitHub repository (or, for an administrator, a folder on the server). It reads the solution —
+  Python as syntax trees, YAML as data, never importing or running anything — applies the framework's inspection
+  rules, and produces a <b>compliance report</b> (verdict, rule pass rate, findings ranked critical / violation /
+  warning / recommendation, each with file, line and fix) and a <b>guidelines document</b>: a remediation plan in
+  priority order, why each rule exists, and the framework configuration that closes the governance findings.</p>
+
+  <h2>When it runs</h2>
+  <table>
+    <tr><th>Trigger</th><th>What happens</th></tr>
+    <tr><td>GitHub push</td><td>A webhook (HMAC-signed) re-inspects every tracked application on that repository and branch.</td></tr>
+    <tr><td>Schedule</td><td>Daily or every few hours; an application is re-inspected only when its branch has moved.</td></tr>
+    <tr><td>Inspect now</td><td>Any signed-in user can inspect a tracked application or any public GitHub repository.</td></tr>
+    <tr><td>CI</td><td><code>k9aif inspect &lt;folder&gt; --fail-on violation</code> runs the same rules and fails the build.</td></tr>
+  </table>
+  <p>Tracked applications are listed in the server's <code>.env</code> (<code>INSPECTOR_APPS</code>), any number of them,
+  each with repository, branch and optional subfolder.</p>
+
+  <h2>Where the rules live</h2>
+  <p>The rules are part of the framework itself (<code>k9_aif_abb.k9_inspect</code>, k9-aif 1.15): each is a
+  <code>BaseInspectionRule</code> registered with <code>InspectionRuleRegistry</code>, so the CLI, CI and this
+  service apply exactly the same checks, and an organisation adds its own rules without changing the framework.
+  Inspector is itself an SBB: it installs k9-aif from PyPI and builds on that ABB.</p>
+
+  <h2>What it does not claim</h2>
+  <p>Inspection is static. It shows that the structure the framework relies on is in place — for example, that
+  governance is configured and every model call goes through <code>llm_invoke()</code> — not that a running
+  deployment behaves correctly. Runtime containment is what <code>k9x_satan</code> tests; human decisions are
+  recorded in K9X HIL.</p>
+
+  <h2>Part of K9X</h2>
+  <p>K9-AIF (framework) · K9X Studio (design) · K9X Inspector (conformance) · K9X Sentinel (threat watch) ·
+  K9X HIL (human review) · K9X Continuum (building-block catalog) · k9x_satan (red team).</p>
+</main>
+</body>
+</html>
