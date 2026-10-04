@@ -14,8 +14,8 @@
   * { box-sizing: border-box; }
   html, body { height: 100%; }
   body { margin: 0; color: var(--ink); overflow-x: hidden; font: 14px/1.5 Inter, system-ui, sans-serif;
-         background: radial-gradient(900px 700px at 18% 45%, #0a2a57 0%, transparent 60%),
-                     radial-gradient(1100px 800px at 78% 40%, #0b2450 0%, #04112a 55%, #020814 100%); }
+         background: radial-gradient(900px 650px at 22% 45%, rgba(18,44,88,.45) 0%, transparent 65%),
+                     radial-gradient(1000px 760px at 75% 42%, #08152d 0%, #040a17 55%, #01040a 100%); }
   /* static background layer: bokeh + data columns, drawn once */
   canvas#bg { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
 
@@ -33,25 +33,25 @@
   .tag { margin: 12px 0 26px; color: #9fb4d1; font-size: 14px; letter-spacing: .01em; max-width: 360px; }
 
   .card { width: min(340px, 100%); padding: 20px 22px 14px; border-radius: 14px; text-align: left;
-          background: rgba(6,20,44,.72); border: 1px solid rgba(148,190,255,.18);
+          background: rgba(4,12,28,.78); border: 1px solid rgba(148,190,255,.14);
           backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
           box-shadow: 0 30px 80px rgba(0,0,0,.45); }
   label { display: block; margin: 0 0 5px; font-size: 10.5px; letter-spacing: .14em; color: var(--mute); text-transform: uppercase; }
   input { width: 100%; height: 38px; padding: 0 12px; margin-bottom: 12px; border-radius: 7px; font: inherit; color: var(--ink);
-          background: rgba(2,10,24,.8); border: 1px solid rgba(96,165,250,.25); outline: none; }
+          background: rgba(1,5,14,.85); border: 1px solid rgba(148,190,255,.16); outline: none; }
   input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(56,189,248,.2); }
   button.go { width: 100%; height: 40px; border: 0; border-radius: 7px; cursor: pointer; color: #fff;
               font: 600 14px Inter, sans-serif; background: #2f6fe4; box-shadow: none; }
   button.go:hover { filter: brightness(1.1); }
   .err { min-height: 16px; margin-top: 8px; color: #fca5a5; font-size: 12.5px; text-align: center; }
-  .demo { margin-top: 4px; padding: 8px 10px; border-radius: 7px; font-size: 12px; color: #cfe3ff; text-align: center;
-          background: rgba(56,189,248,.08); border: 1px solid rgba(56,189,248,.25); }
+  .demo { margin-top: 4px; padding: 8px 10px; border-radius: 7px; font-size: 12px; color: #b9cbe4; text-align: center;
+          background: rgba(148,190,255,.05); border: 1px solid rgba(148,190,255,.12); }
   .demo code { font-family: "JetBrains Mono", monospace; color: #7dd3fc; }
   .demo small { display: block; color: var(--mute); margin-top: 3px; }
   .foot { margin-top: 12px; font-size: 12px; } .foot a { color: #93c5fd; text-decoration: none; }
 
   /* ── right: static holographic panel grid (part of the background scene) ── */
-  .holo { perspective: 1600px; pointer-events: none; opacity: .34; filter: saturate(.75);
+  .holo { perspective: 1600px; pointer-events: none; opacity: .2; filter: saturate(.6) brightness(.9);
           -webkit-mask-image: radial-gradient(ellipse 75% 70% at 55% 50%, #000 40%, transparent 92%);
           mask-image: radial-gradient(ellipse 75% 70% at 55% 50%, #000 40%, transparent 92%); }
   .grid { display: grid; grid-template-columns: 1.55fr 1fr; gap: 14px; transform: rotateY(-9deg) rotateX(2deg); transform-origin: left center; }
@@ -72,7 +72,7 @@
   pre .k { color: #7dd3fc } pre .f { color: #a5b4fc } pre .s { color: #fbbf24 } pre .n { color: #475569 } pre .c { color: #34d399 }
   .score { text-align: center; }
   .gauge { width: 112px; height: 112px; margin: 0 auto 4px; display: block; }
-  .gauge .num { font: 800 30px Orbitron, sans-serif; fill: #e0f2fe; } .gauge .den { font: 500 10px Inter, sans-serif; fill: #93c5fd; }
+  .gauge .num { font: 600 30px "Space Grotesk", sans-serif; fill: #e0f2fe; } .gauge .den { font: 500 10px Inter, sans-serif; fill: #93c5fd; }
   .score .l1 { font-size: 10.5px; letter-spacing: .14em; color: #b6cdea; text-transform: uppercase; }
   .score .l2 { font-size: 11px; letter-spacing: .14em; color: var(--ok); text-transform: uppercase; font-weight: 600; }
   .chain { display: flex; justify-content: space-between; align-items: flex-start; gap: 4px; }
@@ -221,12 +221,12 @@
       const cx = (i * 22 + 8) * dpr, start = rnd() * h, len = Math.floor(rnd() * 22 + 8);
       for (let k = 0; k < len; k++) {
         const yy = start - k * 14 * dpr; if (yy < 0) break;
-        x.fillStyle = `rgba(56,189,248,${(0.07 * (1 - k / len)).toFixed(3)})`;
+        x.fillStyle = `rgba(56,189,248,${(0.045 * (1 - k / len)).toFixed(3)})`;
         x.fillText(rnd() < .5 ? '0' : '1', cx, yy);
       }
     }
     for (let i = 0; i < Math.min(90, Math.floor(innerWidth / 16)); i++) {
-      const px = rnd() * w, py = rnd() * h, r = (rnd() * 2 + .4) * dpr * 3, a = rnd() * .28 + .06;
+      const px = rnd() * w, py = rnd() * h, r = (rnd() * 2 + .4) * dpr * 3, a = rnd() * .16 + .03;
       const g = x.createRadialGradient(px, py, 0, px, py, r);
       g.addColorStop(0, `rgba(125,211,252,${a})`); g.addColorStop(1, 'rgba(125,211,252,0)');
       x.fillStyle = g; x.beginPath(); x.arc(px, py, r, 0, 6.283); x.fill();
