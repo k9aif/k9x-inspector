@@ -4,18 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>K9X Inspector</title>
-<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="icon" href="/static/logo.svg" type="image/svg+xml">
 <style>
-  /* Ubuntu palette: aubergine + orange */
-  :root { --bg:#f7f4f2; --card:#fff; --ink:#2c001e; --mute:#6f5b67; --line:#e6dde1; --accent:#E95420;
-          --crit:#b42318; --viol:#c2410c; --warn:#a16207; --reco:#772953; --ok:#1e8449; }
+  :root { --bg:#f5f7fb; --card:#fff; --ink:#152033; --mute:#5b6a82; --line:#dfe5ee; --accent:#1d6fd8;
+          --crit:#b42318; --viol:#d4561c; --warn:#b7791f; --reco:#2f6fb5; --ok:#1e8449; }
   @media (prefers-color-scheme: dark) {
-    :root { --bg:#1a0715; --card:#280d21; --ink:#f7f1ee; --mute:#b3a2ae; --line:#45243b; --accent:#f2733f;
-            --crit:#ff6b5e; --viol:#fb923c; --warn:#f2c14e; --reco:#d58ab8; --ok:#5fd38d; }
+    :root { --bg:#0b1324; --card:#111c33; --ink:#e5edf9; --mute:#93a3bf; --line:#22314f; --accent:#5aa9ff;
+            --crit:#ff6b5e; --viol:#ff9a5c; --warn:#f2c14e; --reco:#7cb7ff; --ok:#5fd38d; }
   }
   * { box-sizing: border-box; } [hidden] { display: none !important; }
-  body { margin: 0; font: 14px/1.45 Ubuntu, system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); }
+  body { margin: 0; font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); }
   header { padding: 12px 24px; border-bottom: 1px solid var(--line); display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
   header h1 { font-size: 18px; margin: 0; display: flex; align-items: center; gap: 8px; }
   header h1 svg { width: 24px; height: 24px; }
@@ -37,7 +35,7 @@
   table { width: 100%; border-collapse: collapse; }
   th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
   th { font-size: 12px; color: var(--mute); text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
-  tr.click { cursor: pointer; } tr.click:hover td { background: rgba(233,84,32,.07); }
+  tr.click { cursor: pointer; } tr.click:hover td { background: rgba(90,169,255,.07); }
   .wrap { overflow-x: auto; background: var(--card); border: 1px solid var(--line); border-radius: 8px; }
   .sev { font-size: 11.5px; font-weight: 700; padding: 2px 8px; border-radius: 10px; color: #fff; text-transform: uppercase; white-space: nowrap; }
   .sev.critical { background: var(--crit); } .sev.violation { background: var(--viol); }
@@ -64,7 +62,7 @@
 </head>
 <body>
 <header>
-  <h1><svg viewBox="0 0 64 64"><circle cx="27" cy="27" r="17" fill="none" stroke="#E95420" stroke-width="5"/><path d="M39.5 39.5L56 56" stroke="#772953" stroke-width="7" stroke-linecap="round"/><path d="M19 27l6 6 11-12" fill="none" stroke="#1e8449" stroke-width="4" stroke-linecap="round"/></svg>K9X Inspector</h1>
+  <h1><svg viewBox="0 0 64 64"><circle cx="27" cy="27" r="17" fill="none" stroke="#1d6fd8" stroke-width="5"/><path d="M39.5 39.5L56 56" stroke="#0891b2" stroke-width="7" stroke-linecap="round"/><path d="M19 27l6 6 11-12" fill="none" stroke="#1e8449" stroke-width="4" stroke-linecap="round"/></svg>K9X Inspector</h1>
   <span class="sub">Continuous conformance for K9-AIF solutions</span>
   <span class="spacer"></span>
   <span class="pill" id="sched"></span>

@@ -7,16 +7,15 @@
 <link rel="icon" href="/static/logo.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  /* Ubuntu palette: aubergine #2C001E / #5E2750 / #772953, orange #E95420, warm grey #AEA79F */
-  :root { color-scheme: dark; --ink:#f7f1ee; --mute:#b3a2ae; --line:rgba(174,167,159,.22);
-          --panel:rgba(34,6,28,.74); --ok:#38c172; --hi:#E95420; }
+  :root { color-scheme: dark; --ink:#e3eefc; --mute:#8299bb; --line:rgba(96,165,250,.22);
+          --panel:rgba(7,18,38,.72); --ok:#34d399; --hi:#1fb6ff; }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
   body { margin: 0; color: var(--ink); overflow-x: hidden; font: 14px/1.5 Inter, system-ui, sans-serif;
-         background: radial-gradient(800px 600px at 16% 40%, rgba(119,41,83,.38) 0%, transparent 65%),
-                     radial-gradient(1200px 800px at 70% 45%, #2c001e 0%, #170010 58%, #0b0008 100%); }
+         background: radial-gradient(800px 600px at 16% 40%, rgba(20,60,120,.35) 0%, transparent 65%),
+                     radial-gradient(1200px 800px at 70% 45%, #071430 0%, #030916 60%, #01040a 100%); }
   canvas#bg { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
 
   .page { position: relative; z-index: 1; min-height: 100vh; display: grid;
@@ -24,83 +23,83 @@
 
   /* ── left: brand + sign-in ── */
   .brand { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-  .lens { width: 78px; height: 78px; filter: drop-shadow(0 0 18px rgba(233,84,32,.55)); margin-bottom: 10px; }
-  .k9x { margin: 0; font: 700 clamp(40px, 4.6vw, 64px)/.95 Ubuntu, Inter, sans-serif; letter-spacing: .02em;
-         background: linear-gradient(180deg, #ffffff 0%, #fbe9e1 50%, #f4a27e 100%);
+  .lens { width: 78px; height: 78px; filter: drop-shadow(0 0 18px rgba(31,182,255,.7)); margin-bottom: 10px; }
+  .k9x { margin: 0; font: 700 clamp(40px, 4.6vw, 64px)/.95 "Space Grotesk", Inter, sans-serif; letter-spacing: .02em;
+         background: linear-gradient(180deg, #ffffff 0%, #d5ecff 45%, #7cc8ff 100%);
          -webkit-background-clip: text; background-clip: text; color: transparent;
-         filter: drop-shadow(0 0 16px rgba(233,84,32,.28)); }
-  .word { margin-top: 6px; font: 600 clamp(15px, 1.6vw, 21px)/1 Ubuntu, sans-serif; letter-spacing: .34em;
-          padding-left: .34em; color: #f1e2ea; }
+         filter: drop-shadow(0 0 16px rgba(56,189,248,.35)); }
+  .word { margin-top: 6px; font: 600 clamp(15px, 1.6vw, 21px)/1 "Space Grotesk", sans-serif; letter-spacing: .34em;
+          padding-left: .34em; color: #cfe6ff; }
   .rule { width: 200px; height: 1px; margin: 14px 0 12px; background: linear-gradient(90deg, transparent, var(--hi), transparent);
           box-shadow: 0 0 8px var(--hi); }
-  .tag { color: #cdbcc7; font-size: 15px; line-height: 1.45; margin-bottom: 20px; }
+  .tag { color: #aebfd8; font-size: 15px; line-height: 1.45; margin-bottom: 20px; }
   .tag b { color: var(--hi); font-weight: 600; }
 
   .card { width: min(330px, 100%); padding: 18px 20px 12px; border-radius: 12px; text-align: left;
           background: var(--panel); border: 1px solid var(--line); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
           box-shadow: 0 20px 60px rgba(0,0,0,.45); }
-  .card h2 { margin: 0 0 12px; font: 600 11px/1 Inter, sans-serif; letter-spacing: .18em; color: #f1e2ea; text-transform: uppercase; }
+  .card h2 { margin: 0 0 12px; font: 600 11px/1 Inter, sans-serif; letter-spacing: .18em; color: #cfe0f5; text-transform: uppercase; }
   label { display: block; margin: 0 0 5px; font-size: 10.5px; letter-spacing: .12em; color: var(--mute); text-transform: uppercase; }
   input { width: 100%; height: 37px; padding: 0 12px; margin-bottom: 11px; border-radius: 7px; font: inherit; color: var(--ink);
-          background: rgba(14,2,11,.85); border: 1px solid rgba(174,167,159,.2); outline: none; }
-  input:focus { border-color: var(--hi); box-shadow: 0 0 0 3px rgba(233,84,32,.2); }
+          background: rgba(1,6,16,.85); border: 1px solid rgba(148,190,255,.16); outline: none; }
+  input:focus { border-color: var(--hi); box-shadow: 0 0 0 3px rgba(31,182,255,.18); }
   button.go { width: 100%; height: 39px; border: 0; border-radius: 7px; cursor: pointer; color: #fff;
-              font: 600 14px Inter, sans-serif; background: #E95420; }
+              font: 600 14px Inter, sans-serif; background: linear-gradient(90deg, #1f6fe0, #0e9fd1); }
   button.go:hover { filter: brightness(1.08); }
   .err { min-height: 15px; margin-top: 7px; color: #fca5a5; font-size: 12.5px; text-align: center; }
-  .demo { padding: 7px 10px; border-radius: 7px; font-size: 12px; color: #d8c8d2; text-align: center;
-          background: rgba(174,167,159,.06); border: 1px solid rgba(174,167,159,.16); }
-  .demo code { font-family: "JetBrains Mono", monospace; color: #f39a6b; }
+  .demo { padding: 7px 10px; border-radius: 7px; font-size: 12px; color: #b9cbe4; text-align: center;
+          background: rgba(148,190,255,.05); border: 1px solid rgba(148,190,255,.12); }
+  .demo code { font-family: "JetBrains Mono", monospace; color: #7dd3fc; }
   .demo small { display: block; color: var(--mute); margin-top: 2px; }
-  .foot { margin-top: 10px; font-size: 12px; } .foot a { color: #f3a17f; text-decoration: none; }
+  .foot { margin-top: 10px; font-size: 12px; } .foot a { color: #93c5fd; text-decoration: none; }
 
   /* ── right: dashboard grid ── */
   .dash { display: grid; grid-template-columns: 1fr 1.08fr; grid-template-rows: auto auto; gap: 16px; align-content: center; pointer-events: none; }
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; overflow: hidden;
-           box-shadow: inset 0 0 30px rgba(233,84,32,.035); }
+           box-shadow: inset 0 0 30px rgba(31,182,255,.04); }
   .panel h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font: 600 11.5px/1 Inter, sans-serif;
-              letter-spacing: .12em; color: #f1e2ea; text-transform: uppercase; }
+              letter-spacing: .12em; color: #cfe0f5; text-transform: uppercase; }
   .panel h3::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--hi); box-shadow: 0 0 8px var(--hi); }
-  .badge { margin-left: auto; font: 500 10px/1 Inter, sans-serif; letter-spacing: .08em; color: #f6a47f; padding: 4px 8px;
-           border: 1px solid rgba(233,84,32,.45); border-radius: 6px; background: rgba(233,84,32,.08); }
+  .badge { margin-left: auto; font: 500 10px/1 Inter, sans-serif; letter-spacing: .08em; color: #9ad8ff; padding: 4px 8px;
+           border: 1px solid rgba(31,182,255,.4); border-radius: 6px; background: rgba(31,182,255,.08); }
 
   .arch svg { width: 100%; height: auto; display: block; }
-  .arch .node rect { fill: rgba(94,39,80,.45); stroke: rgba(205,160,190,.55); stroke-width: 1.1; }
-  .arch .node text { font: 600 11.5px Inter, sans-serif; fill: #f7f1ee; }
-  .arch .gov rect { fill: rgba(233,84,32,.12); stroke: rgba(233,84,32,.65); }
-  .arch .note { font: 500 9.5px Inter, sans-serif; fill: #b9a3b2; letter-spacing: .04em; }
-  .arch path.e { stroke: #c08aab; stroke-width: 1.3; fill: none; }
-  .arch path.g { stroke: #E95420; stroke-width: 1.2; fill: none; stroke-dasharray: 3 3; }
+  .arch .node rect { fill: rgba(16,40,80,.75); stroke: rgba(125,190,255,.6); stroke-width: 1.1; }
+  .arch .node text { font: 600 11.5px Inter, sans-serif; fill: #e3eefc; }
+  .arch .gov rect { fill: rgba(16,80,60,.35); stroke: rgba(52,211,153,.6); }
+  .arch .note { font: 500 9.5px Inter, sans-serif; fill: #8eabcf; letter-spacing: .04em; }
+  .arch path.e { stroke: #5cb8ff; stroke-width: 1.3; fill: none; }
+  .arch path.g { stroke: #34d399; stroke-width: 1.2; fill: none; stroke-dasharray: 3 3; }
 
-  .codebox { border: 1px solid rgba(174,167,159,.16); border-radius: 8px; background: rgba(12,1,9,.6); padding: 8px 10px; }
-  pre { margin: 0; font: 10.8px/1.62 "JetBrains Mono", ui-monospace, monospace; color: #e3d6dd; white-space: pre; }
-  pre .n { color: #6a4a5f } pre .k { color: #f39a6b } pre .v { color: #fcd34d } pre .t { color: #e3a8d2 } pre .c { color: #8a6c80 }
+  .codebox { border: 1px solid rgba(96,165,250,.16); border-radius: 8px; background: rgba(1,6,16,.6); padding: 8px 10px; }
+  pre { margin: 0; font: 10.8px/1.62 "JetBrains Mono", ui-monospace, monospace; color: #cbd5e1; white-space: pre; }
+  pre .n { color: #3d4f6b } pre .k { color: #7dd3fc } pre .v { color: #fcd34d } pre .t { color: #c4b5fd } pre .c { color: #4b6587 }
   .done { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding: 8px 10px; border-radius: 8px;
-          border: 1px solid rgba(56,193,114,.3); background: rgba(56,193,114,.06); font-size: 11.5px; }
+          border: 1px solid rgba(52,211,153,.28); background: rgba(52,211,153,.06); font-size: 11.5px; }
   .done small { display: block; color: var(--mute); font-size: 10.5px; }
   .done svg { width: 20px; height: 20px; flex: none; }
   .done .chk { margin-left: auto; }
 
   .score { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
   .gauge { width: 168px; height: 168px; }
-  .gauge .num { font: 500 46px Ubuntu, sans-serif; fill: #fbf4f0; }
-  .gauge .den { font: 500 13px Inter, sans-serif; fill: #b9a3b2; }
-  .gauge .ok { font: 600 11px Inter, sans-serif; fill: #38c172; letter-spacing: .12em; }
-  .score p { margin: 8px 0 0; color: #c2b0bc; font-size: 12px; }
+  .gauge .num { font: 600 46px "Space Grotesk", sans-serif; fill: #f2f8ff; }
+  .gauge .den { font: 500 13px Inter, sans-serif; fill: #8eabcf; }
+  .gauge .ok { font: 600 11px Inter, sans-serif; fill: #34d399; letter-spacing: .12em; }
+  .score p { margin: 8px 0 0; color: #9fb3cf; font-size: 12px; }
 
   .right2 { display: grid; gap: 16px; }
   .flow { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; }
-  .st { flex: 1; text-align: center; font: 600 12px/1.2 Inter, sans-serif; color: #f7f1ee; }
+  .st { flex: 1; text-align: center; font: 600 12px/1.2 Inter, sans-serif; color: #e3eefc; }
   .st small { display: block; margin-top: 3px; font: 400 10.5px/1.3 Inter, sans-serif; color: var(--mute); }
-  .st .c { width: 50px; height: 50px; margin: 0 auto 8px; border-radius: 50%; border: 1.5px solid rgba(233,84,32,.7);
-           display: grid; place-items: center; background: rgba(233,84,32,.07); box-shadow: 0 0 14px rgba(233,84,32,.16); }
-  .st svg { width: 22px; height: 22px; stroke: #f6a47f; fill: none; stroke-width: 1.6; }
-  .ar { color: #E95420; margin-top: 16px; font-size: 16px; }
+  .st .c { width: 50px; height: 50px; margin: 0 auto 8px; border-radius: 50%; border: 1.5px solid rgba(31,182,255,.65);
+           display: grid; place-items: center; background: rgba(31,182,255,.07); box-shadow: 0 0 14px rgba(31,182,255,.18); }
+  .st svg { width: 22px; height: 22px; stroke: #9ad8ff; fill: none; stroke-width: 1.6; }
+  .ar { color: #5cb8ff; margin-top: 16px; font-size: 16px; }
   .ctrls { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
-  .ct { text-align: center; font: 500 10.5px/1.2 Inter, sans-serif; color: #e2d3dc; }
-  .ct .b { height: 40px; margin: 0 auto 6px; width: 44px; border-radius: 8px; border: 1px solid rgba(205,160,190,.42);
-           display: grid; place-items: center; background: rgba(94,39,80,.35); }
-  .ct svg { width: 20px; height: 20px; stroke: #f6a47f; fill: none; stroke-width: 1.6; }
+  .ct { text-align: center; font: 500 10.5px/1.2 Inter, sans-serif; color: #c9d8ec; }
+  .ct .b { height: 40px; margin: 0 auto 6px; width: 44px; border-radius: 8px; border: 1px solid rgba(125,190,255,.45);
+           display: grid; place-items: center; background: rgba(16,40,80,.45); }
+  .ct svg { width: 20px; height: 20px; stroke: #9ad8ff; fill: none; stroke-width: 1.6; }
 
   @media (max-width: 1150px) { .page { grid-template-columns: 1fr; } .dash { display: none; } }
 </style>
@@ -112,10 +111,10 @@
   <!-- left: brand + sign-in -->
   <section class="brand">
     <svg class="lens" viewBox="0 0 80 80" aria-hidden="true">
-      <defs><linearGradient id="r" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#ffb08a"/><stop offset="1" stop-color="#E95420"/></linearGradient></defs>
-      <circle cx="33" cy="33" r="22" fill="rgba(233,84,32,.08)" stroke="url(#r)" stroke-width="5"/>
+      <defs><linearGradient id="r" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#8fdcff"/><stop offset="1" stop-color="#1f8fe0"/></linearGradient></defs>
+      <circle cx="33" cy="33" r="22" fill="rgba(31,182,255,.08)" stroke="url(#r)" stroke-width="5"/>
       <path d="M49 49L68 68" stroke="url(#r)" stroke-width="8" stroke-linecap="round"/>
-      <path d="M23 34l7 7 13-15" fill="none" stroke="#ffd2bd" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M23 34l7 7 13-15" fill="none" stroke="#8fdcff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
     <h1 class="k9x">K9X</h1>
     <div class="word">INSPECTOR</div>
@@ -141,8 +140,8 @@
     <div class="panel arch">
       <h3>Solution architecture</h3>
       <svg viewBox="0 0 360 330">
-        <defs><marker id="m" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#c08aab"/></marker>
-              <marker id="mg" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#E95420"/></marker></defs>
+        <defs><marker id="m" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#5cb8ff"/></marker>
+              <marker id="mg" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#34d399"/></marker></defs>
         <g class="node"><rect x="115" y="6" width="130" height="34" rx="7"/><text x="180" y="28" text-anchor="middle">Router</text></g>
         <g class="node"><rect x="115" y="62" width="130" height="34" rx="7"/><text x="180" y="84" text-anchor="middle">Orchestrator</text></g>
         <g class="node"><rect x="115" y="118" width="130" height="34" rx="7"/><text x="180" y="140" text-anchor="middle">Squad</text></g>
@@ -184,9 +183,9 @@
 <span class="n">13</span> <span class="k">enable_zero_trust</span>: <span class="v">true</span></pre>
       </div>
       <div class="done">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#38c172" stroke-width="1.8"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="1.8"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg>
         <div>Inspection complete<small>0 critical · 0 violations · 28 rules</small></div>
-        <svg class="chk" viewBox="0 0 24 24" fill="none" stroke="#38c172" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>
+        <svg class="chk" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>
       </div>
     </div>
 
@@ -194,8 +193,8 @@
     <div class="panel score">
       <h3 style="align-self:flex-start">Compliance score</h3>
       <svg class="gauge" viewBox="0 0 160 160">
-        <defs><linearGradient id="gg" x1="0" x2="1"><stop offset="0" stop-color="#772953"/><stop offset="1" stop-color="#E95420"/></linearGradient></defs>
-        <circle cx="80" cy="80" r="66" stroke="rgba(174,167,159,.14)" stroke-width="11" fill="none"/>
+        <defs><linearGradient id="gg" x1="0" x2="1"><stop offset="0" stop-color="#1f6fe0"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>
+        <circle cx="80" cy="80" r="66" stroke="rgba(96,165,250,.14)" stroke-width="11" fill="none"/>
         <circle cx="80" cy="80" r="66" stroke="url(#gg)" stroke-width="11" fill="none" stroke-linecap="round"
                 stroke-dasharray="381.5 414.7" transform="rotate(-90 80 80)"/>
         <text class="num" x="74" y="88" text-anchor="middle">92</text>
@@ -249,14 +248,14 @@
       const cx = (i * 20 + 6) * dpr, start = rnd() * h, len = Math.floor(rnd() * 26 + 10);
       for (let k = 0; k < len; k++) {
         const yy = start - k * 13 * dpr; if (yy < 0) break;
-        x.fillStyle = `rgba(233,84,32,${(0.10 * (1 - k / len)).toFixed(3)})`;
+        x.fillStyle = `rgba(56,189,248,${(0.12 * (1 - k / len)).toFixed(3)})`;
         x.fillText(rnd() < .5 ? '0' : '1', cx, yy);
       }
     }
     for (let i = 0; i < 60; i++) {
       const px = rnd() * w, py = rnd() * h, r = (rnd() * 1.6 + .4) * dpr * 3, a = rnd() * .14 + .03;
       const g = x.createRadialGradient(px, py, 0, px, py, r);
-      g.addColorStop(0, `rgba(240,160,190,${a})`); g.addColorStop(1, 'rgba(240,160,190,0)');
+      g.addColorStop(0, `rgba(125,211,252,${a})`); g.addColorStop(1, 'rgba(125,211,252,0)');
       x.fillStyle = g; x.beginPath(); x.arc(px, py, r, 0, 6.283); x.fill();
     }
   }
