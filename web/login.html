@@ -24,65 +24,66 @@
 
   /* floating glass panels */
   .panel { position: fixed; z-index: 1; background: var(--glass); border: 1px solid var(--edge); border-radius: 10px;
-           backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 12px 14px;
+           backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 10px 12px; overflow: hidden;
            box-shadow: 0 0 0 1px rgba(56,189,248,.06), 0 18px 60px rgba(0,0,0,.45), 0 0 30px rgba(56,189,248,.12) inset;
            animation: float 9s ease-in-out infinite; pointer-events: none; }
-  .panel h3 { margin: 0 0 9px; font: 600 10.5px/1 Inter, sans-serif; letter-spacing: .18em; color: #cfe3ff; text-transform: uppercase; }
+  .panel h3 { margin: 0 0 8px; font: 600 9.5px/1 Inter, sans-serif; letter-spacing: .16em; color: #cfe3ff; text-transform: uppercase; }
   @keyframes float { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-8px) } }
-  .p-arch  { top: 6vh;  left: 3vw;  width: 290px; animation-delay: -2s; }
-  .p-check { top: 6vh;  right: 3vw; width: 250px; animation-delay: -5s; }
-  .p-code  { bottom: 8vh; left: 3vw; width: 380px; animation-delay: -1s; }
-  .p-score { bottom: 9vh; right: 3vw; width: 210px; animation-delay: -4s; text-align: center; }
-  .p-gov   { bottom: 3vh; left: 50%; width: 520px; margin-left: -260px; animation-delay: -6s; }
-  .flow { display: flex; flex-direction: column; gap: 6px; font: 500 10.5px/1 Inter, sans-serif; }
+  .p-arch  { top: 6vh;  left: 3vw;  width: 250px; animation-delay: -2s; }
+  .p-check { top: 6vh;  right: 3vw; width: 215px; animation-delay: -5s; }
+  .p-code  { bottom: 7vh; left: 3vw; width: 400px; animation-delay: -1s; }
+  .p-score { bottom: 8vh; right: 3vw; width: 180px; animation-delay: -4s; text-align: center; }
+  .p-gov   { bottom: 2.5vh; left: 50%; width: 460px; margin-left: -230px; animation-delay: -6s; }
+  .flow { display: flex; flex-direction: column; gap: 5px; font: 500 9.5px/1 Inter, sans-serif; }
   .flow .row { display: flex; align-items: center; gap: 6px; }
-  .box { border: 1px solid rgba(147,197,253,.55); border-radius: 5px; padding: 6px 8px; color: #dbeafe; background: rgba(30,64,120,.35); white-space: nowrap; }
+  .box { border: 1px solid rgba(147,197,253,.55); border-radius: 5px; padding: 5px 7px; color: #dbeafe; background: rgba(30,64,120,.35); white-space: nowrap; }
   .arr { color: var(--cyan); }
-  .check li { list-style: none; display: flex; justify-content: space-between; gap: 10px; padding: 5px 0;
-              border-bottom: 1px solid rgba(96,165,250,.14); font-size: 12px; color: #dbeafe; }
+  .check li { list-style: none; display: flex; justify-content: space-between; gap: 10px; padding: 4px 0;
+              border-bottom: 1px solid rgba(96,165,250,.14); font-size: 11px; color: #dbeafe; }
   .check ul { margin: 0; padding: 0; } .check li:last-child { border: 0; }
   .check b { color: var(--ok); font-weight: 600; }
-  pre { margin: 0; font: 11px/1.55 "JetBrains Mono", ui-monospace, monospace; color: #cbd5e1; white-space: pre; }
+  pre { margin: 0; font: 9.5px/1.55 "JetBrains Mono", ui-monospace, monospace; color: #cbd5e1; white-space: pre; overflow: hidden; }
   pre .k { color: #7dd3fc } pre .f { color: #a5b4fc } pre .s { color: #86efac } pre .n { color: #475569 }
-  .gauge { width: 120px; height: 120px; margin: 4px auto 6px; }
+  .gauge { width: 96px; height: 96px; margin: 2px auto 4px; }
   .gauge .num { font: 800 30px Orbitron, sans-serif; fill: #e0f2fe; }
   .gauge .den { font: 500 11px Inter, sans-serif; fill: #93c5fd; }
-  .score-l { font-size: 11px; letter-spacing: .14em; color: var(--ok); text-transform: uppercase; }
+  .score-l { font-size: 10px; letter-spacing: .14em; color: var(--ok); text-transform: uppercase; }
   .chain { display: flex; justify-content: space-between; align-items: center; gap: 4px; }
-  .step { text-align: center; font: 600 10.5px/1.3 Inter, sans-serif; color: #dbeafe; letter-spacing: .08em; text-transform: uppercase; }
+  .step { text-align: center; font: 600 9.5px/1.3 Inter, sans-serif; color: #dbeafe; letter-spacing: .08em; text-transform: uppercase; }
   .step small { display: block; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--mute); font-size: 10px; }
-  .step .ic { width: 38px; height: 38px; margin: 0 auto 5px; border: 1px solid rgba(147,197,253,.55); border-radius: 8px;
+  .step .ic { width: 32px; height: 32px; margin: 0 auto 5px; border: 1px solid rgba(147,197,253,.55); border-radius: 8px;
               display: grid; place-items: center; background: rgba(30,64,120,.35); }
-  .step svg { width: 20px; height: 20px; stroke: #93c5fd; fill: none; stroke-width: 1.6; }
+  .step svg { width: 17px; height: 17px; stroke: #93c5fd; fill: none; stroke-width: 1.6; }
 
   /* centre: title + sign-in */
   main { position: relative; z-index: 2; min-height: 100%; display: flex; flex-direction: column; align-items: center;
          justify-content: center; padding: 32px 16px 40px; }
-  .mark { width: 74px; height: 74px; filter: drop-shadow(0 0 22px rgba(56,189,248,.6)); }
-  h1 { margin: 6px 0 0; text-align: center; font: 900 clamp(30px, 7vw, 58px)/1.02 Orbitron, sans-serif; letter-spacing: .06em;
+  .mark { width: 52px; height: 52px; filter: drop-shadow(0 0 18px rgba(56,189,248,.55)); }
+  h1 { margin: 6px 0 0; text-align: center; font: 800 clamp(24px, 6vw, 40px)/1.05 Orbitron, sans-serif; letter-spacing: .04em;
        background: linear-gradient(90deg, #60a5fa 0%, #e0f2fe 45%, #67e8f9 75%, #22d3ee 100%);
        -webkit-background-clip: text; background-clip: text; color: transparent;
        filter: drop-shadow(0 0 26px rgba(56,189,248,.45)); }
-  .tag { margin: 10px 0 24px; color: #b6c8e6; font-size: 12px; letter-spacing: .2em; text-transform: uppercase; text-align: center; }
-  .card { width: min(380px, 100%); padding: 24px 26px 18px; border-radius: 12px;
+  .tag { margin: 8px 0 20px; color: #b6c8e6; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; text-align: center; }
+  .card { width: min(360px, 100%); padding: 22px 24px 16px; border-radius: 12px;
           background: linear-gradient(180deg, rgba(12,32,66,.82), rgba(6,16,36,.86)); border: 1px solid var(--edge);
           backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 24px 80px rgba(0,0,0,.55); }
   label { display: block; margin: 0 0 6px; font-size: 11px; letter-spacing: .14em; color: var(--mute); text-transform: uppercase; }
-  input { width: 100%; height: 40px; padding: 0 12px; margin-bottom: 14px; border-radius: 7px; font: inherit; color: var(--ink);
+  input { width: 100%; height: 38px; padding: 0 12px; margin-bottom: 14px; border-radius: 7px; font: inherit; color: var(--ink);
           background: rgba(3,10,26,.75); border: 1px solid rgba(96,165,250,.25); outline: none; }
   input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(56,189,248,.2); }
-  button.go { width: 100%; height: 42px; border: 0; border-radius: 7px; cursor: pointer; color: #fff;
-              font: 600 14.5px Inter, sans-serif; background: linear-gradient(90deg, #2563eb, #0891b2);
+  button.go { width: 100%; height: 40px; border: 0; border-radius: 7px; cursor: pointer; color: #fff;
+              font: 600 14px Inter, sans-serif; background: linear-gradient(90deg, #2563eb, #0891b2);
               box-shadow: 0 8px 28px rgba(14,165,233,.35); }
   button.go:hover { filter: brightness(1.1); }
   .err { min-height: 18px; margin-top: 10px; color: #fca5a5; font-size: 12.5px; text-align: center; }
-  .demo { margin-top: 8px; padding: 9px 12px; border-radius: 7px; font-size: 12.5px; color: #cfe3ff;
+  .demo { margin-top: 6px; padding: 8px 10px; border-radius: 7px; font-size: 12px; color: #cfe3ff;
           background: rgba(56,189,248,.08); border: 1px solid rgba(56,189,248,.25); text-align: center; }
   .demo code { font-family: "JetBrains Mono", monospace; color: #7dd3fc; }
   .demo small { display: block; color: var(--mute); margin-top: 3px; }
-  .foot { margin-top: 18px; font-size: 12px; color: var(--mute); text-align: center; }
+  .foot { margin-top: 14px; font-size: 12px; color: var(--mute); text-align: center; }
   .foot a { color: #93c5fd; text-decoration: none; }
-  @media (max-width: 1180px) { .p-code, .p-gov { display: none; } }
+  @media (max-width: 1180px), (max-height: 860px) { .p-gov { display: none; } }
+  @media (max-width: 1180px) { .p-code { display: none; } }
   @media (max-width: 900px) { .panel { display: none; } }
 </style>
 </head>
@@ -115,12 +116,13 @@
   <h3>Code analysis</h3>
 <pre><span class="n">1</span> <span class="k">class</span> <span class="f">ClaimsAgent</span>(BaseAgent):
 <span class="n">2</span>     <span class="k">def</span> <span class="f">execute</span>(self, payload):
-<span class="n">3</span>         <span class="k">try</span>:
-<span class="n">4</span>             resp = <span class="f">llm_invoke</span>(self.config, InferenceRequest(
-<span class="n">5</span>                 prompt=payload[<span class="s">"text"</span>], task_type=<span class="s">"extraction"</span>))
-<span class="n">6</span>         <span class="k">except</span> RuntimeError <span class="k">as</span> exc:
-<span class="n">7</span>             <span class="k">return</span> {<span class="s">"status"</span>: <span class="s">"failed"</span>, <span class="s">"reason"</span>: str(exc)}
-<span class="n">8</span>         <span class="k">return</span> {<span class="s">"output"</span>: resp}</pre>
+<span class="n">3</span>         req = InferenceRequest(prompt=payload[<span class="s">"text"</span>],
+<span class="n">4</span>                                task_type=<span class="s">"extraction"</span>)
+<span class="n">5</span>         <span class="k">try</span>:
+<span class="n">6</span>             resp = <span class="f">llm_invoke</span>(self.config, req)
+<span class="n">7</span>         <span class="k">except</span> RuntimeError <span class="k">as</span> exc:
+<span class="n">8</span>             <span class="k">return</span> {<span class="s">"status"</span>: <span class="s">"failed"</span>, <span class="s">"reason"</span>: str(exc)}
+<span class="n">9</span>         <span class="k">return</span> {<span class="s">"output"</span>: resp}</pre>
 </div>
 
 <div class="panel p-score" aria-hidden="true">
