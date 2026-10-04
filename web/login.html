@@ -7,101 +7,123 @@
 <link rel="icon" href="/static/logo.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root { color-scheme: dark; --cyan:#38bdf8; --ink:#e6f2ff; --mute:#8ea6c8;
-          --glass:rgba(6,26,54,.58); --edge:rgba(56,189,248,.42); --ok:#34d399; }
+  /* Ubuntu palette: aubergine #2C001E / #5E2750 / #772953, orange #E95420, warm grey #AEA79F */
+  :root { color-scheme: dark; --ink:#f7f1ee; --mute:#b3a2ae; --line:rgba(174,167,159,.22);
+          --panel:rgba(34,6,28,.74); --ok:#38c172; --hi:#E95420; }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
   body { margin: 0; color: var(--ink); overflow-x: hidden; font: 14px/1.5 Inter, system-ui, sans-serif;
-         background: radial-gradient(900px 650px at 22% 45%, rgba(18,44,88,.45) 0%, transparent 65%),
-                     radial-gradient(1000px 760px at 75% 42%, #08152d 0%, #040a17 55%, #01040a 100%); }
-  /* static background layer: bokeh + data columns, drawn once */
+         background: radial-gradient(800px 600px at 16% 40%, rgba(119,41,83,.38) 0%, transparent 65%),
+                     radial-gradient(1200px 800px at 70% 45%, #2c001e 0%, #170010 58%, #0b0008 100%); }
   canvas#bg { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
 
-  .page { position: relative; z-index: 1; min-height: 100vh; display: grid; grid-template-columns: minmax(380px, 40%) 1fr;
-          align-items: center; gap: 2vw; padding: 3vh 3vw; }
+  .page { position: relative; z-index: 1; min-height: 100vh; display: grid;
+          grid-template-columns: minmax(330px, 30%) 1fr; gap: 22px; padding: 22px 26px; align-items: stretch; }
 
-  /* ── left: stylish title + sign-in ── */
-  .brand { display: flex; flex-direction: column; align-items: center; text-align: center; }
-  .lens { width: 46px; height: 46px; margin-bottom: 14px; opacity: .95; }
-  .eyebrow { font: 500 11px/1 Inter, sans-serif; letter-spacing: .28em; text-transform: uppercase; color: #7f9cc2; margin-bottom: 10px; }
-  .title { margin: 0; font: 500 clamp(30px, 3.3vw, 46px)/1.08 "Space Grotesk", Inter, sans-serif; letter-spacing: -.015em;
-           background: linear-gradient(180deg, #f4f9ff 0%, #c9e3ff 70%, #9cc9f5 100%);
-           -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .title b { font-weight: 600; }
-  .tag { margin: 12px 0 26px; color: #9fb4d1; font-size: 14px; letter-spacing: .01em; max-width: 360px; }
+  /* ── left: brand + sign-in ── */
+  .brand { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .lens { width: 78px; height: 78px; filter: drop-shadow(0 0 18px rgba(233,84,32,.55)); margin-bottom: 10px; }
+  .k9x { margin: 0; font: 700 clamp(40px, 4.6vw, 64px)/.95 Ubuntu, Inter, sans-serif; letter-spacing: .02em;
+         background: linear-gradient(180deg, #ffffff 0%, #fbe9e1 50%, #f4a27e 100%);
+         -webkit-background-clip: text; background-clip: text; color: transparent;
+         filter: drop-shadow(0 0 16px rgba(233,84,32,.28)); }
+  .word { margin-top: 6px; font: 600 clamp(15px, 1.6vw, 21px)/1 Ubuntu, sans-serif; letter-spacing: .34em;
+          padding-left: .34em; color: #f1e2ea; }
+  .rule { width: 200px; height: 1px; margin: 14px 0 12px; background: linear-gradient(90deg, transparent, var(--hi), transparent);
+          box-shadow: 0 0 8px var(--hi); }
+  .tag { color: #cdbcc7; font-size: 15px; line-height: 1.45; margin-bottom: 20px; }
+  .tag b { color: var(--hi); font-weight: 600; }
 
-  .card { width: min(340px, 100%); padding: 20px 22px 14px; border-radius: 14px; text-align: left;
-          background: rgba(4,12,28,.78); border: 1px solid rgba(148,190,255,.14);
-          backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-          box-shadow: 0 30px 80px rgba(0,0,0,.45); }
-  label { display: block; margin: 0 0 5px; font-size: 10.5px; letter-spacing: .14em; color: var(--mute); text-transform: uppercase; }
-  input { width: 100%; height: 38px; padding: 0 12px; margin-bottom: 12px; border-radius: 7px; font: inherit; color: var(--ink);
-          background: rgba(1,5,14,.85); border: 1px solid rgba(148,190,255,.16); outline: none; }
-  input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(56,189,248,.2); }
-  button.go { width: 100%; height: 40px; border: 0; border-radius: 7px; cursor: pointer; color: #fff;
-              font: 600 14px Inter, sans-serif; background: #2f6fe4; box-shadow: none; }
-  button.go:hover { filter: brightness(1.1); }
-  .err { min-height: 16px; margin-top: 8px; color: #fca5a5; font-size: 12.5px; text-align: center; }
-  .demo { margin-top: 4px; padding: 8px 10px; border-radius: 7px; font-size: 12px; color: #b9cbe4; text-align: center;
-          background: rgba(148,190,255,.05); border: 1px solid rgba(148,190,255,.12); }
-  .demo code { font-family: "JetBrains Mono", monospace; color: #7dd3fc; }
-  .demo small { display: block; color: var(--mute); margin-top: 3px; }
-  .foot { margin-top: 12px; font-size: 12px; } .foot a { color: #93c5fd; text-decoration: none; }
+  .card { width: min(330px, 100%); padding: 18px 20px 12px; border-radius: 12px; text-align: left;
+          background: var(--panel); border: 1px solid var(--line); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+          box-shadow: 0 20px 60px rgba(0,0,0,.45); }
+  .card h2 { margin: 0 0 12px; font: 600 11px/1 Inter, sans-serif; letter-spacing: .18em; color: #f1e2ea; text-transform: uppercase; }
+  label { display: block; margin: 0 0 5px; font-size: 10.5px; letter-spacing: .12em; color: var(--mute); text-transform: uppercase; }
+  input { width: 100%; height: 37px; padding: 0 12px; margin-bottom: 11px; border-radius: 7px; font: inherit; color: var(--ink);
+          background: rgba(14,2,11,.85); border: 1px solid rgba(174,167,159,.2); outline: none; }
+  input:focus { border-color: var(--hi); box-shadow: 0 0 0 3px rgba(233,84,32,.2); }
+  button.go { width: 100%; height: 39px; border: 0; border-radius: 7px; cursor: pointer; color: #fff;
+              font: 600 14px Inter, sans-serif; background: #E95420; }
+  button.go:hover { filter: brightness(1.08); }
+  .err { min-height: 15px; margin-top: 7px; color: #fca5a5; font-size: 12.5px; text-align: center; }
+  .demo { padding: 7px 10px; border-radius: 7px; font-size: 12px; color: #d8c8d2; text-align: center;
+          background: rgba(174,167,159,.06); border: 1px solid rgba(174,167,159,.16); }
+  .demo code { font-family: "JetBrains Mono", monospace; color: #f39a6b; }
+  .demo small { display: block; color: var(--mute); margin-top: 2px; }
+  .foot { margin-top: 10px; font-size: 12px; } .foot a { color: #f3a17f; text-decoration: none; }
 
-  /* ── right: static holographic panel grid (part of the background scene) ── */
-  .holo { perspective: 1600px; pointer-events: none; opacity: .2; filter: saturate(.6) brightness(.9);
-          -webkit-mask-image: radial-gradient(ellipse 75% 70% at 55% 50%, #000 40%, transparent 92%);
-          mask-image: radial-gradient(ellipse 75% 70% at 55% 50%, #000 40%, transparent 92%); }
-  .grid { display: grid; grid-template-columns: 1.55fr 1fr; gap: 14px; transform: rotateY(-9deg) rotateX(2deg); transform-origin: left center; }
-  .panel { background: var(--glass); border: 1px solid var(--edge); border-radius: 10px; padding: 12px 14px; overflow: hidden;
-           backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-           box-shadow: inset 0 0 24px rgba(56,189,248,.05); }
-  .panel h3 { margin: 0 0 10px; font: 600 10.5px/1 Inter, sans-serif; letter-spacing: .16em; color: #d6ecff; text-transform: uppercase; }
+  /* ── right: dashboard grid ── */
+  .dash { display: grid; grid-template-columns: 1fr 1.08fr; grid-template-rows: auto auto; gap: 16px; align-content: center; pointer-events: none; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; overflow: hidden;
+           box-shadow: inset 0 0 30px rgba(233,84,32,.035); }
+  .panel h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font: 600 11.5px/1 Inter, sans-serif;
+              letter-spacing: .12em; color: #f1e2ea; text-transform: uppercase; }
+  .panel h3::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--hi); box-shadow: 0 0 8px var(--hi); }
+  .badge { margin-left: auto; font: 500 10px/1 Inter, sans-serif; letter-spacing: .08em; color: #f6a47f; padding: 4px 8px;
+           border: 1px solid rgba(233,84,32,.45); border-radius: 6px; background: rgba(233,84,32,.08); }
+
   .arch svg { width: 100%; height: auto; display: block; }
-  .arch text { font: 600 10px Inter, sans-serif; fill: #dbeafe; letter-spacing: .04em; }
-  .check ul { margin: 0; padding: 0; list-style: none; }
-  .check li { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(96,165,250,.14); font-size: 11.5px; color: #dbeafe; }
-  .check li:last-child { border: 0; }
-  .check .ic { width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(147,197,253,.55); display: grid; place-items: center; flex: none; }
-  .check .ic svg { width: 12px; height: 12px; stroke: #93c5fd; fill: none; stroke-width: 2; }
-  .check li span { flex: 1; } .check li small { display: block; color: var(--mute); font-size: 10px; }
-  .check b { color: var(--ok); font-size: 13px; }
-  pre { margin: 0; font: 10.5px/1.6 "JetBrains Mono", ui-monospace, monospace; color: #cbd5e1; white-space: pre; }
-  pre .k { color: #7dd3fc } pre .f { color: #a5b4fc } pre .s { color: #fbbf24 } pre .n { color: #475569 } pre .c { color: #34d399 }
-  .score { text-align: center; }
-  .gauge { width: 112px; height: 112px; margin: 0 auto 4px; display: block; }
-  .gauge .num { font: 600 30px "Space Grotesk", sans-serif; fill: #e0f2fe; } .gauge .den { font: 500 10px Inter, sans-serif; fill: #93c5fd; }
-  .score .l1 { font-size: 10.5px; letter-spacing: .14em; color: #b6cdea; text-transform: uppercase; }
-  .score .l2 { font-size: 11px; letter-spacing: .14em; color: var(--ok); text-transform: uppercase; font-weight: 600; }
-  .chain { display: flex; justify-content: space-between; align-items: flex-start; gap: 4px; }
-  .step { text-align: center; font: 600 9.5px/1.25 Inter, sans-serif; color: #dbeafe; letter-spacing: .08em; text-transform: uppercase; flex: 1; }
-  .step small { display: block; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--mute); font-size: 9.5px; margin-top: 2px; }
-  .step .ic { width: 36px; height: 36px; margin: 0 auto 6px; border: 1px solid rgba(147,197,253,.6); border-radius: 8px;
-              display: grid; place-items: center; background: rgba(30,64,120,.35); box-shadow: 0 0 12px rgba(56,189,248,.2); }
-  .step svg { width: 19px; height: 19px; stroke: #93c5fd; fill: none; stroke-width: 1.6; }
-  .arr { color: var(--cyan); margin-top: 11px; font-size: 13px; }
+  .arch .node rect { fill: rgba(94,39,80,.45); stroke: rgba(205,160,190,.55); stroke-width: 1.1; }
+  .arch .node text { font: 600 11.5px Inter, sans-serif; fill: #f7f1ee; }
+  .arch .gov rect { fill: rgba(233,84,32,.12); stroke: rgba(233,84,32,.65); }
+  .arch .note { font: 500 9.5px Inter, sans-serif; fill: #b9a3b2; letter-spacing: .04em; }
+  .arch path.e { stroke: #c08aab; stroke-width: 1.3; fill: none; }
+  .arch path.g { stroke: #E95420; stroke-width: 1.2; fill: none; stroke-dasharray: 3 3; }
 
-  @media (max-height: 760px) { .code { display: none; } }
-  @media (max-width: 1100px) { .page { grid-template-columns: 1fr; } .holo { display: none; } }
+  .codebox { border: 1px solid rgba(174,167,159,.16); border-radius: 8px; background: rgba(12,1,9,.6); padding: 8px 10px; }
+  pre { margin: 0; font: 10.8px/1.62 "JetBrains Mono", ui-monospace, monospace; color: #e3d6dd; white-space: pre; }
+  pre .n { color: #6a4a5f } pre .k { color: #f39a6b } pre .v { color: #fcd34d } pre .t { color: #e3a8d2 } pre .c { color: #8a6c80 }
+  .done { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding: 8px 10px; border-radius: 8px;
+          border: 1px solid rgba(56,193,114,.3); background: rgba(56,193,114,.06); font-size: 11.5px; }
+  .done small { display: block; color: var(--mute); font-size: 10.5px; }
+  .done svg { width: 20px; height: 20px; flex: none; }
+  .done .chk { margin-left: auto; }
+
+  .score { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .gauge { width: 168px; height: 168px; }
+  .gauge .num { font: 500 46px Ubuntu, sans-serif; fill: #fbf4f0; }
+  .gauge .den { font: 500 13px Inter, sans-serif; fill: #b9a3b2; }
+  .gauge .ok { font: 600 11px Inter, sans-serif; fill: #38c172; letter-spacing: .12em; }
+  .score p { margin: 8px 0 0; color: #c2b0bc; font-size: 12px; }
+
+  .right2 { display: grid; gap: 16px; }
+  .flow { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; }
+  .st { flex: 1; text-align: center; font: 600 12px/1.2 Inter, sans-serif; color: #f7f1ee; }
+  .st small { display: block; margin-top: 3px; font: 400 10.5px/1.3 Inter, sans-serif; color: var(--mute); }
+  .st .c { width: 50px; height: 50px; margin: 0 auto 8px; border-radius: 50%; border: 1.5px solid rgba(233,84,32,.7);
+           display: grid; place-items: center; background: rgba(233,84,32,.07); box-shadow: 0 0 14px rgba(233,84,32,.16); }
+  .st svg { width: 22px; height: 22px; stroke: #f6a47f; fill: none; stroke-width: 1.6; }
+  .ar { color: #E95420; margin-top: 16px; font-size: 16px; }
+  .ctrls { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+  .ct { text-align: center; font: 500 10.5px/1.2 Inter, sans-serif; color: #e2d3dc; }
+  .ct .b { height: 40px; margin: 0 auto 6px; width: 44px; border-radius: 8px; border: 1px solid rgba(205,160,190,.42);
+           display: grid; place-items: center; background: rgba(94,39,80,.35); }
+  .ct svg { width: 20px; height: 20px; stroke: #f6a47f; fill: none; stroke-width: 1.6; }
+
+  @media (max-width: 1150px) { .page { grid-template-columns: 1fr; } .dash { display: none; } }
 </style>
 </head>
 <body>
 <canvas id="bg"></canvas>
 
 <div class="page">
+  <!-- left: brand + sign-in -->
   <section class="brand">
-    <svg class="lens" viewBox="0 0 48 48" aria-hidden="true">
-      <circle cx="20" cy="20" r="13" fill="none" stroke="#9cc9f5" stroke-width="2.2"/>
-      <path d="M29.5 29.5L42 42" stroke="#9cc9f5" stroke-width="3" stroke-linecap="round"/>
-      <path d="M14 20.5l4 4 8-9" fill="none" stroke="#34d399" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+    <svg class="lens" viewBox="0 0 80 80" aria-hidden="true">
+      <defs><linearGradient id="r" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#ffb08a"/><stop offset="1" stop-color="#E95420"/></linearGradient></defs>
+      <circle cx="33" cy="33" r="22" fill="rgba(233,84,32,.08)" stroke="url(#r)" stroke-width="5"/>
+      <path d="M49 49L68 68" stroke="url(#r)" stroke-width="8" stroke-linecap="round"/>
+      <path d="M23 34l7 7 13-15" fill="none" stroke="#ffd2bd" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
-    <div class="eyebrow">K9X ecosystem</div>
-    <h1 class="title"><b>K9X</b> Inspector</h1>
-    <div class="tag">Continuous conformance for solutions built on the K9-AIF framework.</div>
+    <h1 class="k9x">K9X</h1>
+    <div class="word">INSPECTOR</div>
+    <div class="rule"></div>
+    <div class="tag">Continuous conformance<br>for <b>K9-AIF</b> solutions</div>
 
     <form class="card" id="f" autocomplete="on">
+      <h2>Sign in</h2>
       <label for="u">Username</label>
       <input id="u" name="username" autocomplete="username" required>
       <label for="p">Password</label>
@@ -113,92 +135,98 @@
     <div class="foot"><a href="/about">About K9X Inspector</a></div>
   </section>
 
-  <section class="holo" aria-hidden="true">
-    <div class="grid">
-      <div class="panel arch">
-        <h3>Solution architecture</h3>
-        <svg viewBox="0 0 420 170">
-          <defs><marker id="a" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#38bdf8"/></marker></defs>
-          <g fill="rgba(30,64,120,.4)" stroke="rgba(147,197,253,.7)" stroke-width="1.2">
-            <rect x="10" y="12" width="96" height="34" rx="5"/><rect x="160" y="12" width="104" height="34" rx="5"/><rect x="318" y="12" width="92" height="34" rx="5"/>
-            <rect x="10" y="68" width="96" height="34" rx="5"/><rect x="160" y="68" width="104" height="34" rx="5"/><rect x="318" y="68" width="92" height="34" rx="5"/>
-            <rect x="10" y="124" width="96" height="34" rx="5"/><rect x="160" y="124" width="104" height="34" rx="5"/><rect x="318" y="124" width="92" height="34" rx="5"/>
-          </g>
-          <g text-anchor="middle">
-            <text x="58" y="33">ROUTER</text><text x="212" y="33">ORCHESTRATOR</text><text x="364" y="33">SQUAD</text>
-            <text x="58" y="89">AGENT ABB</text><text x="212" y="89">LLM_INVOKE()</text><text x="364" y="89">MODEL</text>
-            <text x="58" y="145">K9X SHIELD</text><text x="212" y="145">GUARDIAN</text><text x="364" y="145">K9X HIL</text>
-          </g>
-          <g stroke="#38bdf8" stroke-width="1.4" fill="none" marker-end="url(#a)">
-            <path d="M106 29H158"/><path d="M264 29H316"/><path d="M364 46V56H58V66"/>
-            <path d="M106 85H158"/><path d="M264 85H316"/>
-            <path d="M58 102V122"/><path d="M106 141H158"/><path d="M264 141H316"/>
-          </g>
-        </svg>
-      </div>
+  <!-- right: dashboard (decorative) -->
+  <section class="dash" aria-hidden="true">
+    <!-- architecture: Router → Orchestrator → Squad → Agent → llm_invoke() → Model; Shield + Guardian around the agent -->
+    <div class="panel arch">
+      <h3>Solution architecture</h3>
+      <svg viewBox="0 0 360 330">
+        <defs><marker id="m" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#c08aab"/></marker>
+              <marker id="mg" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#E95420"/></marker></defs>
+        <g class="node"><rect x="115" y="6" width="130" height="34" rx="7"/><text x="180" y="28" text-anchor="middle">Router</text></g>
+        <g class="node"><rect x="115" y="62" width="130" height="34" rx="7"/><text x="180" y="84" text-anchor="middle">Orchestrator</text></g>
+        <g class="node"><rect x="115" y="118" width="130" height="34" rx="7"/><text x="180" y="140" text-anchor="middle">Squad</text></g>
+        <g class="node"><rect x="115" y="174" width="130" height="34" rx="7"/><text x="180" y="196" text-anchor="middle">Agent (ABB)</text></g>
+        <g class="node"><rect x="115" y="230" width="130" height="34" rx="7"/><text x="180" y="252" text-anchor="middle">llm_invoke()</text></g>
+        <g class="node"><rect x="115" y="286" width="130" height="34" rx="7"/><text x="180" y="308" text-anchor="middle">Model</text></g>
+        <path class="e" d="M180 40V60" marker-end="url(#m)"/><path class="e" d="M180 96V116" marker-end="url(#m)"/>
+        <path class="e" d="M180 152V172" marker-end="url(#m)"/><path class="e" d="M180 208V228" marker-end="url(#m)"/>
+        <path class="e" d="M180 264V284" marker-end="url(#m)"/>
+        <!-- governance around the agent: checks input before, output after -->
+        <g class="node gov"><rect x="270" y="150" width="84" height="34" rx="7"/><text x="312" y="172" text-anchor="middle">K9X Shield</text></g>
+        <g class="node gov"><rect x="270" y="200" width="84" height="34" rx="7"/><text x="312" y="222" text-anchor="middle">Guardian</text></g>
+        <path class="g" d="M268 167H252V186H247" marker-end="url(#mg)"/>
+        <path class="g" d="M268 217H252V198H247" marker-end="url(#mg)"/>
+        <text class="note" x="312" y="252" text-anchor="middle">pre / post checks</text>
+        <text class="note" x="312" y="265" text-anchor="middle">on every call</text>
+        <g class="node"><rect x="6" y="62" width="84" height="34" rx="7"/><text x="48" y="84" text-anchor="middle">K9X HIL</text></g>
+        <path class="g" d="M113 79H92" marker-end="url(#mg)"/>
+        <text class="note" x="48" y="112" text-anchor="middle">human gates</text>
+      </svg>
+    </div>
 
-      <div class="panel check">
-        <h3>Conformance checklist</h3>
-        <ul>
-          <li><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h7"/></svg></div><span>ABB contracts<small>agents extend an agent ABB</small></span><b>✓</b></li>
-          <li><div class="ic"><svg viewBox="0 0 24 24"><path d="M5 5h14v4H5zM5 15h14v4H5zM12 9v6"/></svg></div><span>Three-layer decoupling<small>router · orchestrator · squad</small></span><b>✓</b></li>
-          <li><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 12h16M14 6l6 6-6 6"/></svg></div><span>Single model path<small>every call via llm_invoke()</small></span><b>✓</b></li>
-          <li><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg></div><span>Governance by construction<small>Shield + Guardian on</small></span><b>✓</b></li>
-          <li><div class="ic"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></div><span>Secrets &amp; Zero Trust<small>.env only · signed identity</small></span><b>✓</b></li>
-        </ul>
+    <!-- code analysis: a governance configuration the inspector reads -->
+    <div class="panel">
+      <h3>Code analysis <span class="badge">INSPECTING…</span></h3>
+      <div class="codebox">
+<pre><span class="n"> 1</span> <span class="c"># config/config.yaml</span>
+<span class="n"> 2</span> <span class="k">security</span>:
+<span class="n"> 3</span>   <span class="k">shield</span>:
+<span class="n"> 4</span>     <span class="k">enabled</span>: <span class="v">true</span>
+<span class="n"> 5</span>     <span class="k">ingress</span>: {<span class="k">checks</span>: [<span class="t">PromptInjectionCheck</span>, <span class="t">PIIBoundaryCheck</span>]}
+<span class="n"> 6</span>     <span class="k">egress</span>:  {<span class="k">checks</span>: [<span class="t">PIIBoundaryCheck</span>, <span class="t">OutboundLinkCheck</span>]}
+<span class="n"> 7</span>   <span class="k">identity</span>: {<span class="k">mode</span>: <span class="v">signed</span>}
+<span class="n"> 8</span> <span class="k">governance</span>:
+<span class="n"> 9</span>   <span class="k">guardian</span>:
+<span class="n">10</span>     <span class="k">enabled</span>: <span class="v">true</span>
+<span class="n">11</span>     <span class="k">model</span>: <span class="v">granite4.1-guardian:8b</span>
+<span class="n">12</span>     <span class="k">on_unavailable</span>: <span class="v">fail_closed</span>
+<span class="n">13</span> <span class="k">enable_zero_trust</span>: <span class="v">true</span></pre>
       </div>
-
-      <div class="panel code">
-        <h3>Code analysis</h3>
-<pre><span class="n"> 1</span> <span class="k">class</span> <span class="f">ClaimsAgent</span>(BaseAgent):
-<span class="n"> 2</span>     <span class="k">def</span> <span class="f">execute</span>(self, payload):
-<span class="n"> 3</span>         req = InferenceRequest(prompt=payload[<span class="s">"text"</span>],
-<span class="n"> 4</span>                                task_type=<span class="s">"extraction"</span>)
-<span class="n"> 5</span>         <span class="k">try</span>:
-<span class="n"> 6</span>             resp = <span class="f">llm_invoke</span>(self.config, req)  <span class="c"># K9-LLM-001 ✓</span>
-<span class="n"> 7</span>         <span class="k">except</span> RuntimeError <span class="k">as</span> exc:    <span class="c"># K9-LLM-002 ✓</span>
-<span class="n"> 8</span>             <span class="k">return</span> {<span class="s">"status"</span>: <span class="s">"failed"</span>, <span class="s">"reason"</span>: str(exc)}
-<span class="n"> 9</span>         <span class="k">return</span> {<span class="s">"output"</span>: resp}</pre>
+      <div class="done">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#38c172" stroke-width="1.8"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg>
+        <div>Inspection complete<small>0 critical · 0 violations · 28 rules</small></div>
+        <svg class="chk" viewBox="0 0 24 24" fill="none" stroke="#38c172" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>
       </div>
+    </div>
 
-      <div class="panel score">
-        <h3>Compliance score</h3>
-        <svg class="gauge" viewBox="0 0 120 120">
-          <defs><linearGradient id="g"><stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>
-          <circle cx="60" cy="60" r="50" stroke="rgba(96,165,250,.18)" stroke-width="9" fill="none"/>
-          <circle cx="60" cy="60" r="50" stroke="url(#g)" stroke-width="9" fill="none" stroke-linecap="round" stroke-dasharray="289 314" transform="rotate(-90 60 60)"/>
-          <text class="num" x="60" y="64" text-anchor="middle">92</text>
-          <text class="den" x="60" y="82" text-anchor="middle">/ 100</text>
-        </svg>
-        <div class="l1">Rules passing</div>
-        <div class="l2">Compliant</div>
-      </div>
+    <!-- score -->
+    <div class="panel score">
+      <h3 style="align-self:flex-start">Compliance score</h3>
+      <svg class="gauge" viewBox="0 0 160 160">
+        <defs><linearGradient id="gg" x1="0" x2="1"><stop offset="0" stop-color="#772953"/><stop offset="1" stop-color="#E95420"/></linearGradient></defs>
+        <circle cx="80" cy="80" r="66" stroke="rgba(174,167,159,.14)" stroke-width="11" fill="none"/>
+        <circle cx="80" cy="80" r="66" stroke="url(#gg)" stroke-width="11" fill="none" stroke-linecap="round"
+                stroke-dasharray="381.5 414.7" transform="rotate(-90 80 80)"/>
+        <text class="num" x="74" y="88" text-anchor="middle">92</text>
+        <text class="den" x="112" y="88" text-anchor="middle">%</text>
+        <text class="ok" x="80" y="110" text-anchor="middle">COMPLIANT</text>
+      </svg>
+      <p>of inspection rules passing</p>
+    </div>
 
-      <div class="panel">
-        <h3>Framework controls inspected</h3>
-        <div class="chain">
-          <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h7"/></svg></div>Contracts<small>ABB / SBB</small></div>
-          <span class="arr">→</span>
-          <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg></div>Govern<small>Shield · Guardian</small></div>
-          <span class="arr">→</span>
-          <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></div>Zero Trust<small>identity · policy</small></div>
-          <span class="arr">→</span>
-          <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="M8 10l3 2-3 2M13 14h3"/></svg></div>Kafka<small>ownership</small></div>
-          <span class="arr">→</span>
-          <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4"/><circle cx="12" cy="12" r="3"/></svg></div>Versions<small>latest k9-aif</small></div>
-        </div>
-      </div>
-
+    <div class="right2">
       <div class="panel">
         <h3>Inspection flow</h3>
-        <div class="chain">
-          <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="8" r="2"/><path d="M6 8v8M18 10c0 4-6 4-10 6"/></svg></div>Push</div>
-          <span class="arr">→</span>
-          <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg></div>Inspect</div>
-          <span class="arr">→</span>
-          <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h4"/></svg></div>Report</div>
-          <span class="arr">→</span>
-          <div class="step"><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 19V5h11l5 5v9z"/><path d="M8 13l3 3 5-6"/></svg></div>Guide</div>
+        <div class="flow">
+          <div class="st"><div class="c"><svg viewBox="0 0 24 24"><path d="M7 18a5 5 0 1 1 1-9.9A6 6 0 0 1 19 10a4 4 0 0 1-1 8"/><path d="M12 12v8M9 15l3-3 3 3"/></svg></div>Push<small>commit to a tracked repo</small></div>
+          <span class="ar">→</span>
+          <div class="st"><div class="c"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg></div>Inspect<small>static: code never runs</small></div>
+          <span class="ar">→</span>
+          <div class="st"><div class="c"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h4"/></svg></div>Report<small>findings with file &amp; line</small></div>
+          <span class="ar">→</span>
+          <div class="st"><div class="c"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.6 1 2.5h6c0-.9.2-1.7 1-2.5A6 6 0 0 0 12 3z"/></svg></div>Guide<small>remediation plan</small></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Framework controls</h3>
+        <div class="ctrls">
+          <div class="ct"><div class="b"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h7"/></svg></div>Contracts</div>
+          <div class="ct"><div class="b"><svg viewBox="0 0 24 24"><path d="M5 4h14v4H5zM5 16h14v4H5zM12 8v8"/></svg></div>Decoupling</div>
+          <div class="ct"><div class="b"><svg viewBox="0 0 24 24"><path d="M4 12h16M14 6l6 6-6 6"/></svg></div>Model path</div>
+          <div class="ct"><div class="b"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg></div>Governance</div>
+          <div class="ct"><div class="b"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></div>Zero Trust</div>
+          <div class="ct"><div class="b"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3M15 8l2 2"/></svg></div>Secrets</div>
         </div>
       </div>
     </div>
@@ -206,29 +234,29 @@
 </div>
 
 <script>
-// Static background: bokeh dots and faint binary columns, drawn once (and on resize). No animation.
+// Static background: faint binary columns at the far left and a few soft dots, drawn once.
 (() => {
   const c = document.getElementById('bg'), x = c.getContext('2d');
-  let seed = 7;
-  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;   // fixed pattern every load
+  let seed = 11;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   function paint() {
-    seed = 7;
+    seed = 11;
     const dpr = devicePixelRatio || 1, w = c.width = innerWidth * dpr, h = c.height = innerHeight * dpr;
     x.clearRect(0, 0, w, h);
-    x.font = `${11 * dpr}px "JetBrains Mono", monospace`;
-    const ncol = Math.floor(innerWidth * .3 / 26);
+    x.font = `${10 * dpr}px "JetBrains Mono", monospace`;
+    const ncol = Math.floor(innerWidth * .12 / 20);
     for (let i = 0; i < ncol; i++) {
-      const cx = (i * 22 + 8) * dpr, start = rnd() * h, len = Math.floor(rnd() * 22 + 8);
+      const cx = (i * 20 + 6) * dpr, start = rnd() * h, len = Math.floor(rnd() * 26 + 10);
       for (let k = 0; k < len; k++) {
-        const yy = start - k * 14 * dpr; if (yy < 0) break;
-        x.fillStyle = `rgba(56,189,248,${(0.045 * (1 - k / len)).toFixed(3)})`;
+        const yy = start - k * 13 * dpr; if (yy < 0) break;
+        x.fillStyle = `rgba(233,84,32,${(0.10 * (1 - k / len)).toFixed(3)})`;
         x.fillText(rnd() < .5 ? '0' : '1', cx, yy);
       }
     }
-    for (let i = 0; i < Math.min(90, Math.floor(innerWidth / 16)); i++) {
-      const px = rnd() * w, py = rnd() * h, r = (rnd() * 2 + .4) * dpr * 3, a = rnd() * .16 + .03;
+    for (let i = 0; i < 60; i++) {
+      const px = rnd() * w, py = rnd() * h, r = (rnd() * 1.6 + .4) * dpr * 3, a = rnd() * .14 + .03;
       const g = x.createRadialGradient(px, py, 0, px, py, r);
-      g.addColorStop(0, `rgba(125,211,252,${a})`); g.addColorStop(1, 'rgba(125,211,252,0)');
+      g.addColorStop(0, `rgba(240,160,190,${a})`); g.addColorStop(1, 'rgba(240,160,190,0)');
       x.fillStyle = g; x.beginPath(); x.arc(px, py, r, 0, 6.283); x.fill();
     }
   }
@@ -239,7 +267,7 @@ fetch('/api/public').then(r => r.json()).then(d => {
   if (!d.demo) return;
   const el = document.getElementById('demo');
   el.innerHTML = `Demo login: <code>${d.demo.user}</code> / <code>${d.demo.password}</code>
-    <small>Open public demonstration — inspect any public GitHub repository built on K9-AIF.</small>`;
+    <small>Open public demonstration with sample data.</small>`;
   el.hidden = false;
 }).catch(() => {});
 
