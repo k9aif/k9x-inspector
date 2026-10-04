@@ -31,10 +31,10 @@
   section[id] { scroll-margin-top: 64px; }
 
   .hero-band { border-bottom: 1px solid var(--border);
-    background: radial-gradient(900px 420px at 80% 30%, rgba(14,165,233,.16), transparent 70%),
-                radial-gradient(700px 400px at 10% 90%, rgba(45,212,191,.08), transparent 70%),
-                linear-gradient(180deg, #071022, var(--bg)); }
-  .hero { padding: 64px 0 48px; display: grid; grid-template-columns: 1.25fr .9fr; gap: 40px; align-items: center; }
+    background: linear-gradient(90deg, rgba(5,10,22,.82) 0%, rgba(5,10,22,.45) 48%, rgba(5,10,22,0) 72%),
+                linear-gradient(180deg, rgba(10,18,34,0) 70%, var(--bg) 100%),
+                url("/static/landing-bg.jpg") right center / cover no-repeat, #050a16; }
+  .hero { padding: 92px 0 84px; max-width: 640px; }
   .eyebrow { font: 700 12px var(--mono); color: var(--teal); letter-spacing: .08em; text-transform: uppercase; }
   h1 { font-size: clamp(30px, 4.2vw, 44px); line-height: 1.12; margin: 10px 0 14px; letter-spacing: -.8px; }
   h1 em { font-style: normal; color: var(--hi); }
@@ -89,7 +89,7 @@
   .limits ul { margin: 6px 0 0; padding-left: 20px; color: var(--muted); } .limits li { margin: 4px 0; }
   footer { border-top: 1px solid var(--border); margin-top: 26px; padding: 22px 0 34px; color: var(--muted); font-size: 13px; }
   footer .wrap { display: flex; gap: 18px; flex-wrap: wrap; justify-content: space-between; }
-  @media (max-width: 900px) { .hero { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) { .hero-band { background-position: 70% center; } .hero { padding: 56px 0 48px; } }
 </style>
 </head>
 <body>
@@ -127,18 +127,7 @@
       </div>
       <div class="logins" id="logins"></div>
     </div>
-    <div class="preview" aria-label="Sample report">
-      <div class="top"><b>Sample inspection</b> acme/claims-solution · main <span class="verdict">NON-COMPLIANT · 75%</span></div>
-      <div class="stats">
-        <div class="stat"><b style="color:var(--crit)">0</b><span>critical</span></div>
-        <div class="stat"><b style="color:var(--viol)">4</b><span>violations</span></div>
-        <div class="stat"><b style="color:var(--warn)">21</b><span>warnings</span></div>
-        <div class="stat"><b style="color:var(--reco)">3</b><span>advice</span></div>
-      </div>
-      <div class="find"><span class="sev v">VIOL</span><div><code>orchestrators/claims_orchestrator.py:14</code><small>orchestrator imports agent classes — register them in the entry point</small></div></div>
-      <div class="find"><span class="sev w">WARN</span><div><code>agents/fraud_scoring_agent.py:38</code><small>llm_invoke() not inside try/except</small></div></div>
-      <div class="find"><span class="sev r">ADV</span><div><code>requirements.txt:2</code><small>requires k9-aif&gt;=1.4.0 — raise to the latest</small></div></div>
-    </div>
+</div>
   </section>
 </div>
 </div>
@@ -182,6 +171,19 @@
 
   <section id="outputs">
     <h2>What you get</h2>
+    <div style="max-width:520px;margin:0 0 16px">
+    <div class="preview" aria-label="Sample report">
+      <div class="top"><b>Sample inspection</b> acme/claims-solution · main <span class="verdict">NON-COMPLIANT · 75%</span></div>
+      <div class="stats">
+        <div class="stat"><b style="color:var(--crit)">0</b><span>critical</span></div>
+        <div class="stat"><b style="color:var(--viol)">4</b><span>violations</span></div>
+        <div class="stat"><b style="color:var(--warn)">21</b><span>warnings</span></div>
+        <div class="stat"><b style="color:var(--reco)">3</b><span>advice</span></div>
+      </div>
+      <div class="find"><span class="sev v">VIOL</span><div><code>orchestrators/claims_orchestrator.py:14</code><small>orchestrator imports agent classes — register them in the entry point</small></div></div>
+      <div class="find"><span class="sev w">WARN</span><div><code>agents/fraud_scoring_agent.py:38</code><small>llm_invoke() not inside try/except</small></div></div>
+      <div class="find"><span class="sev r">ADV</span><div><code>requirements.txt:2</code><small>requires k9-aif&gt;=1.4.0 — raise to the latest</small></div></div>
+    </div>
     <div class="grid">
       <div class="card"><h3>Compliance report</h3><p>Verdict (compliant / with warnings / non-compliant), share of rules passing, findings ranked
         critical → violation → warning → recommendation, each with file, line, the offending line and the fix. Markdown and JSON.</p></div>

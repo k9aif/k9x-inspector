@@ -318,6 +318,6 @@ def about():
 @app.get("/static/{name}")
 def static(name: str):
     p = (WEB / name).resolve()
-    if p.parent != WEB.resolve() or not p.is_file() or p.suffix not in (".svg", ".png", ".css", ".js"):
+    if p.parent != WEB.resolve() or not p.is_file() or p.suffix not in (".svg", ".png", ".jpg", ".css", ".js"):
         raise HTTPException(404)
     return FileResponse(p)
