@@ -15,7 +15,7 @@ package "Triggers" {
   [UI: Inspect now /\nany GitHub URL] as UI
 }
 
-package "K9X Inspector (SBB)" {
+package "K9X Inspector (built on K9-AIF)" {
   [Queue + worker\n(one at a time)] as Q
   [Repository fetch\n(shallow, size-capped,\nread only)] as R
   [Guidelines\ngenerator] as G
