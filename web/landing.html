@@ -135,13 +135,13 @@
 <div class="wrap">
   <section id="checks">
     <h2>What it checks</h2>
-    <p class="sub">28 rules in eight areas. The rules are part of the framework itself (<code>k9_aif_abb.k9_inspect</code>), so
+    <p class="sub">29 rules in eight areas. The rules are part of the framework itself (<code>k9_aif_abb.k9_inspect</code>), so
       the command line, CI and this service apply exactly the same checks.</p>
     <div class="grid">
       <div class="card"><h3><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h7"/></svg></span>Contracts</h3>
-        <p>Agents extend <code>BaseAgent</code> or another agent ABB, so governance wraps them; loop agents keep their loop.</p><div class="ids">K9-CON-001 · 002</div></div>
+        <p>Agents extend <code>BaseAgent</code> or another agent ABB, so governance wraps them; model loops use a loop ABB.</p><div class="ids">K9-CON-001 · 002 · K9-PAT-001</div></div>
       <div class="card"><h3><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 4h14v4H5zM5 16h14v4H5zM12 8v8"/></svg></span>Three-layer decoupling</h3>
-        <p>Router → Orchestrators → Squads → Agents; each layer knows only the one below.</p><div class="ids">K9-DEC-001</div></div>
+        <p>Router → Orchestrators → Squads → Agents; each layer knows only the one below. An orchestrator never names an agent.</p><div class="ids">K9-DEC-001 · 002</div></div>
       <div class="card"><h3><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 12h16M14 6l6 6-6 6"/></svg></span>One model path</h3>
         <p>Every model call goes through <code>llm_invoke()</code> — where governance, retries and the call trace live.</p><div class="ids">K9-LLM-001 · 002 · 003</div></div>
       <div class="card"><h3><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg></span>Governance</h3>
@@ -151,7 +151,7 @@
       <div class="card"><h3><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="M8 10l3 2-3 2M13 14h3"/></svg></span>Kafka ownership</h3>
         <p>Only routers and orchestrators publish; agents and squads raise <code>RequiresHIL</code> instead.</p><div class="ids">K9-KAF-001</div></div>
       <div class="card"><h3><span class="ic"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3M15 8l2 2"/></svg></span>Secrets &amp; configuration</h3>
-        <p>No secrets in YAML, no committed <code>.env</code>, no private IP addresses; squad and agent YAML well formed.</p><div class="ids">K9-CFG-001 … 004 · K9-YAML-001 · 002</div></div>
+        <p>No secrets in YAML, no committed <code>.env</code>, no private IP addresses; squad and agent YAML well formed; every Python file parses.</p><div class="ids">K9-CFG-001 … 004 · K9-YAML-001 · 002 · K9-SYN-001</div></div>
       <div class="card"><h3><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="4"/></svg></span>Framework version</h3>
         <p>The k9-aif version each solution declares, against the latest release — and whether it predates governance by construction.</p><div class="ids">K9-DEP-001 · 002</div></div>
     </div>
@@ -180,7 +180,7 @@
         <div class="stat"><b style="color:var(--warn)">21</b><span>warnings</span></div>
         <div class="stat"><b style="color:var(--reco)">3</b><span>advice</span></div>
       </div>
-      <div class="find"><span class="sev v">VIOL</span><div><code>orchestrators/claims_orchestrator.py:14</code><small>orchestrator imports agent classes — register them in the entry point</small></div></div>
+      <div class="find"><span class="sev v">VIOL</span><div><code>orchestrators/claims_orchestrator.py:14</code><small>orchestrator names agents — load squads by id; the squad layer builds the agents</small></div></div>
       <div class="find"><span class="sev w">WARN</span><div><code>agents/fraud_scoring_agent.py:38</code><small>llm_invoke() not inside try/except</small></div></div>
       <div class="find"><span class="sev r">ADV</span><div><code>requirements.txt:2</code><small>requires k9-aif&gt;=1.4.0 — raise to the latest</small></div></div>
     </div>
