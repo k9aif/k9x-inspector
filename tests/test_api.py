@@ -72,7 +72,14 @@ def test_admin_local_inspection_end_to_end(client, tmp_path):
     assert any(f["rule_id"] == "K9-LLM-001" for f in d["report"]["findings"])
     g = client.get(f"/api/inspections/{iid}/guidelines.md").text
     assert "Remediation plan" in g and "Governance configuration" in g
-    assert client.get(f"/api/inspections/{iid}/report.md").text.startswith("# K9-AIF Compliance Report")
+    shown = client.get(f"/api/inspections/{iid}/report.md")
+    assert shown.text.startswith("# K9-AIF Compliance Report")
+    assert shown.headers["content-disposition"].startswith("inline;")
+    saved = client.get(f"/api/inspections/{iid}/report.md?download=1")
+    assert saved.headers["content-disposition"].startswith("attachment;")
+    assert saved.headers["content-disposition"].endswith(f'-{iid}-compliance-report.md"')
+    assert client.get(f"/api/inspections/{iid}/report.json?download=1").headers[
+        "content-disposition"].endswith(f'-{iid}-compliance-report.json"')
     assert len(client.get("/api/rules").json()) >= 20
 
 

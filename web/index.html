@@ -261,7 +261,9 @@ function renderReport(d, target) {
         <b>Inspection #${d.id}</b><span class="mono">${esc(r.source)}</span>${r.commit ? `<span class="mono sub">@ ${esc(r.commit)}</span>` : ''}
         <span class="sub">k9-aif ${esc(r.framework_version)} · ${when(r.inspected_at)}</span><span class="spacer" style="flex:1"></span>
         <a class="btn" href="/api/inspections/${d.id}/guidelines.md" target="_blank">Guidelines</a>
-        <a class="btn" href="/api/inspections/${d.id}/report.md" target="_blank">Report .md</a></div></div>
+        <a class="btn" href="/api/inspections/${d.id}/report.md" target="_blank">Report .md</a>
+        <a class="btn" href="/api/inspections/${d.id}/report.md?download=1" download>Save report</a>
+        <a class="btn" href="/api/inspections/${d.id}/report.json?download=1" download>Save .json</a></div></div>
       <div class="cards">
         <div class="card stat"><div class="k">Verdict</div><div class="v">${verdict(r.verdict)}</div></div>
         <div class="card stat"><div class="k">Rules passing</div><div class="v">${r.score}%</div><div class="sub">of ${r.rules.length}</div></div>
@@ -295,7 +297,7 @@ document.querySelectorAll('[data-doc]').forEach(b => b.onclick = () => { DOCKIND
 async function showDoc() {
   if (!SEL) return;
   const url = `/api/inspections/${SEL}/${DOCKIND}.md`;
-  $('#dl').href = url; $('#dlj').href = `/api/inspections/${SEL}/report.json`;
+  $('#dl').href = url + '?download=1'; $('#dlj').href = `/api/inspections/${SEL}/report.json?download=1`;
   $('#doc').innerHTML = md(await api(url));
 }
 // minimal Markdown → HTML for the generated documents (headings, lists, code, tables, emphasis)

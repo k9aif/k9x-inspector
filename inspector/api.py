@@ -137,31 +137,36 @@ def inspection(iid: int, user: str = Depends(login)):
     return d
 
 
-def _doc(iid: int, field: str, suffix: str) -> PlainTextResponse:
+def _disposition(d: dict, iid: int, suffix: str, download: bool) -> dict:
+    """Shown in the browser by default; ?download=1 saves it as a file."""
+    name = (d["source"].split("/")[-1].split(" ")[0] or "solution") + f"-{iid}-{suffix}"
+    return {"Content-Disposition": f'{"attachment" if download else "inline"}; filename="{name}"'}
+
+
+def _doc(iid: int, field: str, suffix: str, download: bool = False) -> PlainTextResponse:
     d = store.get_inspection(iid)
     if not d or not d.get(field):
         raise HTTPException(404, "No document for this inspection")
-    name = (d["source"].split("/")[-1].split(" ")[0] or "solution") + f"-{iid}-{suffix}.md"
     return PlainTextResponse(d[field], media_type="text/markdown",
-                             headers={"Content-Disposition": f'inline; filename="{name}"'})
+                             headers=_disposition(d, iid, f"{suffix}.md", download))
 
 
 @app.get("/api/inspections/{iid}/report.md")
-def report_md(iid: int, user: str = Depends(login)):
-    return _doc(iid, "report_md", "compliance-report")
+def report_md(iid: int, download: bool = False, user: str = Depends(login)):
+    return _doc(iid, "report_md", "compliance-report", download)
 
 
 @app.get("/api/inspections/{iid}/guidelines.md")
-def guidelines_md(iid: int, user: str = Depends(login)):
-    return _doc(iid, "guidelines_md", "guidelines")
+def guidelines_md(iid: int, download: bool = False, user: str = Depends(login)):
+    return _doc(iid, "guidelines_md", "guidelines", download)
 
 
 @app.get("/api/inspections/{iid}/report.json")
-def report_json(iid: int, user: str = Depends(login)):
+def report_json(iid: int, download: bool = False, user: str = Depends(login)):
     d = store.get_inspection(iid)
     if not d or not d.get("report"):
         raise HTTPException(404, "No report for this inspection")
-    return JSONResponse(d["report"])
+    return JSONResponse(d["report"], headers=_disposition(d, iid, "compliance-report.json", download))
 
 
 @app.get("/api/rules")
