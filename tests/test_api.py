@@ -106,6 +106,16 @@ def test_only_admin_deletes_an_inspection(client, tmp_path):
     assert client.delete(f"/api/inspections/{iid}").status_code == 404
 
 
+def test_removing_an_app_can_take_its_reports(client, monkeypatch):
+    from inspector import store
+    from inspector.settings import AppSpec
+    signin(client, "admin", "admin-test-pw")
+    app_id = store.add_app(AppSpec(name="Tmp", repo="https://github.com/k9aif/examples", branch="main", subdir=""))
+    iid = store.start_inspection("https://github.com/k9aif/examples", "manual", app_id=app_id)
+    assert client.delete(f"/api/apps/{app_id}?reports=1").json() == {"ok": True, "reports_deleted": 1}
+    assert client.get(f"/api/inspections/{iid}").status_code == 404
+
+
 def test_rejects_non_github_urls(client):
     signin(client, "admin", "admin-test-pw")
     for bad in ("http://github.com/a/b", "https://evil.example/a/b", "file:///etc", "https://github.com/a/b/../c"):

@@ -160,6 +160,12 @@ def delete_inspection(iid: int) -> bool:
         return c.execute(delete(inspections).where(inspections.c.id == iid)).rowcount > 0
 
 
+def delete_inspections_for_app(app_id: int) -> int:
+    """Remove every inspection of one application (admin, when the application is removed)."""
+    with engine().begin() as c:
+        return c.execute(delete(inspections).where(inspections.c.app_id == app_id)).rowcount
+
+
 def list_inspections(limit: int = 100, app_id: Optional[int] = None) -> List[Dict[str, Any]]:
     q = select(*_SUMMARY).order_by(desc(inspections.c.id)).limit(limit)
     if app_id is not None:

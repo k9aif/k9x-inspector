@@ -64,6 +64,8 @@
   .arch img { max-width: 100%; height: auto; background: #fff; border-radius: 8px; }
   .muted { color: var(--mute); }
   @media (max-width: 700px) { header, main { padding-left: 14px; padding-right: 14px; } input.wide { min-width: 100%; } }
+  .trash { background: none; border: 1px solid transparent; color: var(--muted); padding: 4px 6px; border-radius: 6px; cursor: pointer; vertical-align: middle; }
+  .trash:hover { color: var(--crit); border-color: var(--crit); }
 </style>
 </head>
 <body>
@@ -122,7 +124,7 @@
   </section>
 
   <section id="t-reports" hidden>
-    <div class="wrap"><table id="hist"><thead><tr><th>#</th><th>Source</th><th>Trigger</th><th>Commit</th><th>Status</th><th>Verdict</th><th>Score</th><th>Findings</th><th>Started</th></tr></thead><tbody></tbody></table></div>
+    <div class="wrap"><table id="hist"><thead><tr><th>#</th><th>Source</th><th>Trigger</th><th>Commit</th><th>Status</th><th>Verdict</th><th>Score</th><th>Findings</th><th>Started</th><th></th></tr></thead><tbody></tbody></table></div>
     <div class="legend"><span class="sev critical">critical</span> a governance or security control is bypassed, or a secret is exposed
   · <span class="sev violation">violation</span> breaks a framework contract or rule — fix before production
   · <span class="sev warning">warning</span> degrades reliability or governance — fix soon
@@ -205,12 +207,12 @@ async function loadApps() {
       <td>${fwCell(l.framework)}</td>
       <td>${l.id ? `<a href="#" data-r="${l.id}">#${l.id}</a> <span class="status-${l.status}">${l.status}</span><div class="sub">${esc(l.trigger)} · ${when(l.started_at)}</div>` : '<span class="muted">not yet</span>'}</td>
       <td>${verdict(l.verdict)}</td><td>${l.score ?? ''}${l.score != null ? '%' : ''}</td><td>${cnt(l.counts)}</td>
-      <td><button data-i="${a.id}">Inspect now</button>${ME?.role === 'admin' && a.origin !== 'env' ? ` <button data-d="${a.id}">Remove</button>` : ''}</td></tr>`;
+      <td><button data-i="${a.id}">Inspect now</button>${ME?.role === 'admin' && a.origin !== 'env' ? ` <button class="trash" data-d="${a.id}" title="Remove this application and its reports"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/></svg></button>` : ''}</td></tr>`;
   }).join('') || '<tr><td colspan="8" class="muted">No applications tracked yet.</td></tr>';
   $('#apps').querySelectorAll('[data-i]').forEach(b => b.onclick = async () => {
     b.disabled = true; try { const r = await api(`/api/apps/${b.dataset.i}/inspect`, {method: 'POST'}); follow(r.id); } catch (e) { alert(e.message); } });
   $('#apps').querySelectorAll('[data-d]').forEach(b => b.onclick = async () => {
-    if (confirm('Stop tracking this application?')) { await api(`/api/apps/${b.dataset.d}`, {method: 'DELETE'}); loadApps(); } });
+    if (confirm('Remove this application and delete its reports?')) { await api(`/api/apps/${b.dataset.d}?reports=1`, {method: 'DELETE'}); loadApps(); loadHist(); } });
   $('#apps').querySelectorAll('[data-r]').forEach(a => a.onclick = e => { e.preventDefault(); show('reports'); openReport(+a.dataset.r); });
 }
 $('#fadd').onsubmit = async e => {
@@ -245,9 +247,14 @@ async function loadHist() {
   const rows = await api('/api/inspections?limit=200');
   $('#hist tbody').innerHTML = rows.map(r => `<tr class="click" data-id="${r.id}"><td>${r.id}</td><td class="mono">${esc(r.source)}</td><td>${esc(r.trigger)}</td>
     <td class="mono">${esc(r.commit || '')}</td><td class="status-${r.status}">${r.status}</td><td>${verdict(r.verdict)}</td>
-    <td>${r.score ?? ''}${r.score != null ? '%' : ''}</td><td>${cnt(r.counts)}</td><td>${when(r.started_at)}</td></tr>`).join('')
-    || '<tr><td colspan="9" class="muted">No inspections yet.</td></tr>';
+    <td>${r.score ?? ''}${r.score != null ? '%' : ''}</td><td>${cnt(r.counts)}</td><td>${when(r.started_at)}</td>
+    <td>${ME?.role === 'admin' ? `<button class="trash" data-x="${r.id}" title="Delete this report"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/></svg></button>` : ''}</td></tr>`).join('')
+    || '<tr><td colspan="10" class="muted">No inspections yet.</td></tr>';
   $('#hist').querySelectorAll('tr.click').forEach(tr => tr.onclick = () => openReport(+tr.dataset.id));
+  $('#hist').querySelectorAll('[data-x]').forEach(b => b.onclick = async e => {
+    e.stopPropagation();
+    if (!confirm(`Delete report #${b.dataset.x}?`)) return;
+    await api(`/api/inspections/${b.dataset.x}`, {method: 'DELETE'}); $('#report').innerHTML = ''; loadHist(); loadApps(); });
 }
 async function openReport(id) { renderReport(await api(`/api/inspections/${id}`), '#report'); }
 function renderReport(d, target) {

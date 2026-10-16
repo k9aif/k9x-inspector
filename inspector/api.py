@@ -236,14 +236,16 @@ def add_app(body: NewApp, user: str = Depends(admin)):
 
 
 @app.delete("/api/apps/{app_id}")
-def remove_app(app_id: int, user: str = Depends(admin)):
+def remove_app(app_id: int, reports: bool = False, user: str = Depends(admin)):
+    """Stop tracking an application added in the UI; ?reports=1 also deletes its inspections."""
     app_row = store.get_app(app_id)
     if not app_row:
         raise HTTPException(404, "No such application")
     if app_row["origin"] == "env":
         raise HTTPException(400, "Listed in .env (INSPECTOR_APPS); remove it there")
+    removed = store.delete_inspections_for_app(app_id) if reports else 0
     store.remove_app(app_id)
-    return {"ok": True}
+    return {"ok": True, "reports_deleted": removed}
 
 
 @app.post("/api/schedule/run")
