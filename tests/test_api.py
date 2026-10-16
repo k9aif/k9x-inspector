@@ -83,6 +83,29 @@ def test_admin_local_inspection_end_to_end(client, tmp_path):
     assert len(client.get("/api/rules").json()) >= 20
 
 
+def test_framework_itself_is_not_graded(client):
+    """Inspecting the K9-AIF framework (the ABBs) reports that it is the framework, with no rules applied."""
+    from pathlib import Path
+    abb = Path(__file__).resolve().parents[3] / "k9-aif-framework" / "k9_aif_abb"
+    if not abb.is_dir():
+        pytest.skip("framework checkout not next to k9x-ecosystem")
+    signin(client, "admin", "admin-test-pw")
+    d = wait(client, client.post("/api/inspect", json={"path": str(abb)}).json()["id"])
+    assert d["status"] == "done" and d["verdict"] == "K9-AIF FRAMEWORK"
+    assert d["report"]["scope"] == "framework" and d["report"]["findings"] == [] and d["report"]["score"] is None
+    assert "This is the K9-AIF framework" in client.get(f"/api/inspections/{d['id']}/guidelines.md").text
+
+
+def test_only_admin_deletes_an_inspection(client, tmp_path):
+    signin(client, "admin", "admin-test-pw")
+    iid = wait(client, client.post("/api/inspect", json={"path": str(solution(tmp_path))}).json()["id"])["id"]
+    signin(client, "demo", "demo")
+    assert client.delete(f"/api/inspections/{iid}").status_code == 403
+    signin(client, "admin", "admin-test-pw")
+    assert client.delete(f"/api/inspections/{iid}").json() == {"deleted": iid}
+    assert client.delete(f"/api/inspections/{iid}").status_code == 404
+
+
 def test_rejects_non_github_urls(client):
     signin(client, "admin", "admin-test-pw")
     for bad in ("http://github.com/a/b", "https://evil.example/a/b", "file:///etc", "https://github.com/a/b/../c"):

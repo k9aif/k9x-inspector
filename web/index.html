@@ -263,10 +263,13 @@ function renderReport(d, target) {
         <a class="btn" href="/api/inspections/${d.id}/guidelines.md" target="_blank">Guidelines</a>
         <a class="btn" href="/api/inspections/${d.id}/report.md" target="_blank">Report .md</a>
         <a class="btn" href="/api/inspections/${d.id}/report.md?download=1" download>Save report</a>
-        <a class="btn" href="/api/inspections/${d.id}/report.json?download=1" download>Save .json</a></div></div>
+        <a class="btn" href="/api/inspections/${d.id}/report.json?download=1" download>Save .json</a>
+        ${ME?.role === 'admin' ? `<button class="btn" id="delinsp">Delete</button>` : ''}</div></div>
+      ${r.scope === 'framework' ? `<div class="card" style="margin-top:12px"><b>This is the K9-AIF framework itself.</b>
+        <p class="muted" style="margin:6px 0 0">${esc(r.note || '')}</p></div>` : ''}
       <div class="cards">
         <div class="card stat"><div class="k">Verdict</div><div class="v">${verdict(r.verdict)}</div></div>
-        <div class="card stat"><div class="k">Rules passing</div><div class="v">${r.score}%</div><div class="sub">of ${r.rules.length}</div></div>
+        <div class="card stat"><div class="k">Rules passing</div><div class="v">${r.score != null ? r.score + '%' : '—'}</div><div class="sub">of ${r.rules.length}</div></div>
         <div class="card stat"><div class="k">Critical</div><div class="v" style="color:var(--crit)">${r.counts.critical}</div></div>
         <div class="card stat"><div class="k">Violations</div><div class="v" style="color:var(--viol)">${r.counts.violation}</div></div>
         <div class="card stat"><div class="k">Warnings</div><div class="v" style="color:var(--warn)">${r.counts.warning}</div></div>
@@ -281,6 +284,10 @@ function renderReport(d, target) {
         <td>${esc(f.message)}${f.snippet ? `<div class="mono sub">${esc(f.snippet)}</div>` : ''}<div class="fix">Fix: ${esc(f.fix)}</div></td></tr>`).join('')
         || '<tr><td colspan="4" class="muted">No findings.</td></tr>'}</tbody></table></div>`;
     $(target).querySelectorAll('[data-f]').forEach(b => b.onclick = () => { filt = b.dataset.f; draw(); });
+    const del = $(target).querySelector('#delinsp');
+    if (del) del.onclick = async () => {
+      if (!confirm(`Delete inspection #${d.id} and its report?`)) return;
+      await api(`/api/inspections/${d.id}`, {method: 'DELETE'}); $(target).innerHTML = ''; loadHist(); };
   };
   draw();
 }

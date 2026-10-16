@@ -154,6 +154,12 @@ _SUMMARY = [inspections.c[k] for k in ("id", "app_id", "source", "trigger", "req
                                        "verdict", "score", "counts", "framework", "error", "started_at", "finished_at")]
 
 
+def delete_inspection(iid: int) -> bool:
+    """Remove one inspection and its report (admin)."""
+    with engine().begin() as c:
+        return c.execute(delete(inspections).where(inspections.c.id == iid)).rowcount > 0
+
+
 def list_inspections(limit: int = 100, app_id: Optional[int] = None) -> List[Dict[str, Any]]:
     q = select(*_SUMMARY).order_by(desc(inspections.c.id)).limit(limit)
     if app_id is not None:

@@ -57,6 +57,12 @@ def rule_catalog() -> Dict[str, Dict[str, str]]:
 
 
 def build(report: Dict[str, Any], app_name: str = "") -> str:
+    if report.get("scope") == "framework":
+        return "\n".join([
+            f"# Conformance guidelines — {app_name or report['source']}", "",
+            f"Inspected `{report['source']}`" + (f" at commit `{report['commit'][:12]}`" if report.get("commit") else "")
+            + f" (k9-aif {report['framework_version']}, {report['inspected_at']}).", "",
+            "## This is the K9-AIF framework", "", report.get("note", ""), ""])
     rules = rule_catalog()
     findings: List[Dict[str, Any]] = report["findings"]
     c = report["counts"]

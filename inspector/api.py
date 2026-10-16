@@ -169,6 +169,14 @@ def report_json(iid: int, download: bool = False, user: str = Depends(login)):
     return JSONResponse(d["report"], headers=_disposition(d, iid, "compliance-report.json", download))
 
 
+@app.delete("/api/inspections/{iid}")
+def delete_inspection(iid: int, user: str = Depends(admin)):
+    """Admin only: remove an inspection and its report (for example one run on the wrong folder)."""
+    if not store.delete_inspection(iid):
+        raise HTTPException(404, "No such inspection")
+    return {"deleted": iid}
+
+
 @app.get("/api/rules")
 def rules(user: str = Depends(login)):
     return list(guidelines.rule_catalog().values())
