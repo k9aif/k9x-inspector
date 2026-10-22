@@ -135,7 +135,7 @@
 <div class="wrap">
   <section id="checks">
     <h2>What it checks</h2>
-    <p class="sub">29 rules in eight areas. The rules are part of the framework itself (<code>k9_aif_abb.k9_inspect</code>), so
+    <p class="sub">31 rules in nine areas. The rules are part of the framework itself (<code>k9_aif_abb.k9_inspect</code>), so
       the command line, CI and this service apply exactly the same checks.</p>
     <div class="grid">
       <div class="card"><h3><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h7"/></svg></span>Contracts</h3>
@@ -145,7 +145,7 @@
       <div class="card"><h3><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 12h16M14 6l6 6-6 6"/></svg></span>One model path</h3>
         <p>Every model call goes through <code>llm_invoke()</code> — where governance, retries and the call trace live.</p><div class="ids">K9-LLM-001 · 002 · 003</div></div>
       <div class="card"><h3><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg></span>Governance</h3>
-        <p>Shield enabled with checks, Guardian on and failing closed, production mode, no agent opting out, orchestrators screening input.</p><div class="ids">K9-GOV-001 … 010</div></div>
+        <p>Shield enabled with the essential checks (injection in, personal data out), Guardian on and failing closed, production mode, no agent opting out, orchestrators screening input.</p><div class="ids">K9-GOV-001 … 010</div></div>
       <div class="card"><h3><span class="ic"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></span>Zero Trust</h3>
         <p>Enabled at the orchestrator, with signed identity rather than roles claimed in the payload.</p><div class="ids">K9-GOV-011</div></div>
       <div class="card"><h3><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="M8 10l3 2-3 2M13 14h3"/></svg></span>Kafka ownership</h3>
@@ -154,6 +154,8 @@
         <p>No secrets in YAML, no committed <code>.env</code>, no private IP addresses; squad and agent YAML well formed; every Python file parses.</p><div class="ids">K9-CFG-001 … 004 · K9-YAML-001 · 002 · K9-SYN-001</div></div>
       <div class="card"><h3><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="4"/></svg></span>Framework version</h3>
         <p>The k9-aif version each solution declares, against the latest release — and whether it predates governance by construction.</p><div class="ids">K9-DEP-001 · 002</div></div>
+      <div class="card"><h3><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 12h4l2-5 4 10 2-5h4"/></svg></span>Network &amp; supply chain</h3>
+        <p>API adapters keep agents off internal hosts; locally served models are pinned by digest, so new weights behind a tag are refused.</p><div class="ids">K9-NET-001 · K9-SUP-001</div></div>
     </div>
   </section>
 

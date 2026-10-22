@@ -1,4 +1,4 @@
-k9-aif>=1.18.3
+k9-aif>=1.18.7
 fastapi>=0.111
 uvicorn[standard]>=0.30
 python-dotenv>=1.0
