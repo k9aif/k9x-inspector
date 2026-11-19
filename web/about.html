@@ -17,6 +17,16 @@
   table { border-collapse: collapse; width: 100%; } td, th { border-bottom: 1px solid var(--line); padding: 7px 8px; text-align: left; vertical-align: top; }
   a, a:visited { color: var(--accent); }
   .back { display: inline-block; margin-bottom: 14px; }
+  .ver { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin-top: 18px; }
+  .ver table td:first-child { color: var(--mute); width: 34%; }
+  .badge { display: inline-block; border-radius: 999px; padding: 1px 10px; font-size: 12px; font-weight: 600; margin-left: 6px; }
+  .badge.new { background: #fff1d6; color: #7a4b00; } .badge.ok { background: #dcf5e6; color: #135c31; }
+  @media (prefers-color-scheme: dark) { .badge.new { background: #4a3300; color: #ffd98a; } .badge.ok { background: #0f3d24; color: #9be3b6; } }
+  .row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 12px; }
+  button { font: inherit; border: 1px solid var(--accent); background: var(--accent); color: #fff; border-radius: 7px; padding: 6px 14px; cursor: pointer; }
+  button[disabled] { opacity: .55; cursor: default; }
+  #umsg { color: var(--mute); }
+  pre { white-space: pre-wrap; font-size: 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 7px; padding: 10px; max-height: 320px; overflow: auto; }
 </style>
 </head>
 <body>
@@ -24,6 +34,21 @@
   <a class="back" href="/">← K9X Inspector</a> · <a href="/app">Open the app</a>
   <h1><img src="/static/logo.svg" alt="">K9X Inspector</h1>
   <div class="sub">Continuous conformance inspection for solutions built on the K9-AIF framework.</div>
+
+  <section class="ver" aria-live="polite">
+    <table>
+      <tr><td>K9X Inspector</td><td id="v-app">…</td></tr>
+      <tr><td>k9-aif installed</td><td id="v-fw">…</td></tr>
+      <tr><td>k9-aif latest (PyPI)</td><td id="v-latest">…</td></tr>
+      <tr><td>Inspection rules</td><td id="v-rules">…</td></tr>
+      <tr><td>Last update</td><td id="v-last">…</td></tr>
+    </table>
+    <div class="row">
+      <button id="ubtn" type="button" disabled>Check for updates</button>
+      <span id="umsg"></span>
+    </div>
+    <details id="ulog" hidden><summary>Updater log (admin)</summary><pre id="ulogtxt"></pre></details>
+  </section>
 
   <h2>What it does</h2>
   <p>K9-AIF's value is architectural: ABB contracts, three-layer decoupling, one governed model path, governance by
@@ -70,5 +95,75 @@
     <tr><td><b>K9X HIL</b></td><td>Human-in-the-loop review and decisions</td></tr>
   </table>
 </main>
+<script>
+const $ = id => document.getElementById(id);
+let signedIn = false, isAdmin = false, startCommit = null, startFw = null, polling = null;
+
+function fmtLast(u) {
+  const p = u.pending, l = u.last;
+  if (!u.updater_installed) return 'Updater not installed on this host';
+  if (p) return p.stuck ? `Requested ${Math.round(p.age_s / 60)} min ago, not picked up: is the host updater running?`
+                        : `Requested by ${p.user}; waiting for the host`;
+  if (!l) return 'Never';
+  return `${l.state.replace('_', ' ')}: ${l.message || ''} (${new Date(l.at * 1000).toLocaleString()})`;
+}
+
+async function load() {
+  let d;
+  try { d = await (await fetch('/api/about', {cache: 'no-store'})).json(); }
+  catch (e) { $('umsg').textContent = 'Inspector is restarting…'; return null; }
+  if (startCommit === null) { startCommit = d.commit; startFw = d.k9_aif; }
+  $('v-app').innerHTML = `${d.version} · build <code>${d.commit}</code>` + (d.built !== 'unknown' ? ` · ${d.built}` : '')
+    + (d.code_behind ? ` <span class="badge new">newer: ${d.latest_commit}</span>` : '');
+  $('v-fw').innerHTML = d.k9_aif + (d.framework_behind ? ' <span class="badge new">update available</span>'
+                                 : d.framework_behind === false ? ' <span class="badge ok">latest</span>' : '');
+  $('v-latest').textContent = d.k9_aif_latest;
+  $('v-rules').textContent = d.rules || '…';
+  $('v-last').textContent = fmtLast(d.update);
+  const running = (d.update.last && d.update.last.state === 'running') || (d.update.pending && !d.update.pending.stuck);
+  const b = $('ubtn');
+  if (!signedIn) { b.textContent = 'Sign in to update'; b.disabled = false; b.onclick = () => location.href = '/login'; }
+  else {
+    b.textContent = running ? 'Updating…' : (d.update_available ? 'Update now' : 'Check for updates');
+    b.disabled = running; b.onclick = requestUpdate;
+  }
+  if (running && !polling) polling = setInterval(watch, 5000);
+  return d;
+}
+
+async function watch() {
+  const d = await load();
+  if (d && startCommit && (d.commit !== startCommit || d.k9_aif !== startFw)) location.reload();   // new build is up
+  if (d && !((d.update.last && d.update.last.state === 'running') || d.update.pending)) {
+    clearInterval(polling); polling = null;
+  }
+  if (isAdmin) loadLog();
+}
+
+async function requestUpdate() {
+  const b = $('ubtn'); b.disabled = true; $('umsg').textContent = 'Checking…';
+  try {
+    const r = await fetch('/api/update', {method: 'POST', headers: {'Content-Type': 'application/json'}});
+    const d = await r.json();
+    $('umsg').textContent = d.message || d.detail || `HTTP ${r.status}`;
+    if (d.result === 'requested' || d.result === 'pending' || d.result === 'running') polling = polling || setInterval(watch, 5000);
+  } catch (e) { $('umsg').textContent = 'Request failed: ' + e; }
+  await load();
+}
+
+async function loadLog() {
+  const r = await fetch('/api/update/log', {cache: 'no-store'});
+  if (r.ok) { $('ulog').hidden = false; $('ulogtxt').textContent = (await r.text()) || '(empty)'; }
+}
+
+(async () => {
+  try {
+    const r = await fetch('/api/me', {cache: 'no-store'});
+    if (r.ok) { const me = await r.json(); signedIn = true; isAdmin = me.role === 'admin'; }
+  } catch (e) {}
+  await load();
+  if (isAdmin) loadLog();
+})();
+</script>
 </body>
 </html>

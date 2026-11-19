@@ -48,7 +48,7 @@ def wait(c, iid):
 
 
 def test_public_endpoints(client):
-    assert client.get("/api/health").json() == {"ok": True}
+    assert client.get("/api/health").json()["ok"] is True
     assert client.get("/api/public").json()["demo"]["user"] == "demo"
     assert client.get("/api/apps").status_code == 401
 
@@ -144,3 +144,99 @@ def test_landing_is_public_and_app_requires_sign_in():
         assert c.get("/").status_code == 200 and "Try the demo" in c.get("/").text
         r = c.get("/app", follow_redirects=False)
         assert r.status_code == 303 and r.headers["location"] == "/login"
+
+
+# ── About and the Update button ───────────────────────────────────────────────
+import json as _json  # noqa: E402
+
+from inspector import updates  # noqa: E402
+
+
+@pytest.fixture
+def upd(tmp_path, monkeypatch):
+    """Update folder in tmp; installed/latest versions and the GitHub head under the test's control."""
+    monkeypatch.setenv("INSPECTOR_UPDATE_DIR", str(tmp_path))
+    monkeypatch.setenv("INSPECTOR_COMMIT", "abc1234")
+    state = {"installed": "1.30.0", "latest": "1.30.0", "head": "abc1234ffff"}
+    monkeypatch.setattr(updates, "framework_installed", lambda: state["installed"])
+    monkeypatch.setattr(runner, "latest_framework", lambda: state["latest"])
+    monkeypatch.setattr(updates, "latest_commit", lambda: state["head"])
+    (tmp_path / "updater.json").write_text(_json.dumps({"installed_at": 1}))
+    return tmp_path, state
+
+
+def test_health_and_about_show_versions(client, upd):
+    h = client.get("/api/health").json()
+    assert h["ok"] is True and h["commit"] == "abc1234" and h["version"]
+    client.cookies.clear()
+    a = client.get("/api/about").json()                     # public, like the About page
+    assert a["k9_aif"] == "1.30.0" and a["update_available"] is False and a["rules"] > 0
+
+
+def test_update_needs_sign_in(client, upd):
+    client.cookies.clear()
+    assert client.post("/api/update").status_code == 401
+
+
+def test_update_is_a_no_op_when_up_to_date(client, upd):
+    folder, _ = upd
+    signin(client, "demo", "demo")
+    r = client.post("/api/update").json()
+    assert r["result"] == "up_to_date"
+    assert not (folder / "request.json").exists()           # nothing reaches the host
+
+
+def test_demo_can_request_an_update_when_framework_is_behind(client, upd):
+    folder, state = upd
+    state["latest"] = "1.31.0"
+    signin(client, "demo", "demo")
+    r = client.post("/api/update").json()
+    assert r["result"] == "requested" and "1.30.0 → 1.31.0" in r["message"]
+    assert _json.loads((folder / "request.json").read_text())["user"] == "demo"
+    assert client.post("/api/update").json()["result"] == "pending"     # second click: no second request
+
+
+def test_newer_commit_is_an_update(client, upd):
+    folder, state = upd
+    state["head"] = "def5678aaaa"
+    signin(client, "demo", "demo")
+    assert client.post("/api/update").json()["result"] == "requested"
+
+
+def test_cooldown_after_the_host_took_a_request(client, upd):
+    folder, state = upd
+    state["latest"] = "1.31.0"
+    signin(client, "demo", "demo")
+    assert client.post("/api/update").json()["result"] == "requested"
+    (folder / "request.json").unlink()                      # host took it
+    (folder / "status.json").write_text(_json.dumps({"state": "failed", "message": "x", "at": time.time()}))
+    assert client.post("/api/update").json()["result"] == "cooldown"
+
+
+def test_running_update_blocks_and_stale_running_does_not(client, upd):
+    folder, state = upd
+    state["latest"] = "1.31.0"
+    signin(client, "demo", "demo")
+    (folder / "status.json").write_text(_json.dumps({"state": "running", "message": "Building", "at": time.time()}))
+    assert client.post("/api/update").json()["result"] == "running"
+    (folder / "status.json").write_text(_json.dumps({"state": "running", "at": time.time() - 3 * 3600}))
+    assert client.post("/api/update").json()["result"] == "requested"
+
+
+def test_no_updater_installed_is_said_not_hidden(client, upd):
+    folder, state = upd
+    (folder / "updater.json").unlink()
+    state["latest"] = "1.31.0"
+    signin(client, "demo", "demo")
+    r = client.post("/api/update").json()
+    assert r["result"] == "no_updater" and "install-updater" in r["message"]
+    assert not (folder / "request.json").exists()
+
+
+def test_update_log_is_admin_only(client, upd):
+    folder, _ = upd
+    (folder / "update.log").write_text("line1\nline2\n")
+    signin(client, "demo", "demo")
+    assert client.get("/api/update/log").status_code == 403
+    signin(client, "admin", "admin-test-pw")
+    assert "line2" in client.get("/api/update/log").text

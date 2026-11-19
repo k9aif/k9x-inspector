@@ -22,3 +22,11 @@ report and a generated guidelines document per inspection. Shell, sign-in and de
   inspect a server folder. Any new endpoint keeps that split (tests in test_api.py).
 - Storage is SQLAlchemy Core (`store.py`); status values (running/done/failed) and triggers
   (manual/adhoc/schedule/webhook) are used by the UI.
+- **Updates are pull-based and host-side.** The container never runs pip, git or podman for itself: `/api/update`
+  only writes `runtime/update/request.json`, and only when something is newer (`updates.check()`); the host's
+  `ubuntu/update.sh` (systemd path unit, `build-run.sh install-updater`) re-checks, pulls, builds, restarts, health
+  checks and rolls back. Any signed-in user may click it (idempotent, locked, 10-min cooldown); only the admin sees
+  the updater log. Never add an inbound trigger or a web-side install. Tests in `tests/test_api.py`.
+- **Build identity.** `VERSION` + `INSPECTOR_COMMIT` / `INSPECTOR_BUILT` build-args (the image has no `.git`), shown on
+  About and `/api/health`. Bump `VERSION` with each release. `.containerignore` keeps `.env` out of the image.
+

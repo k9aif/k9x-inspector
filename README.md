@@ -39,6 +39,26 @@ python3.11 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
 ```
 
 Container (single image, `runtime/` mounted for the database and clones): `ubuntu/build-run.sh all`.
+`build` bakes the commit and build time into the image and installs the latest k9-aif from PyPI (a new framework
+release busts the pip layer's cache; no `--no-cache` needed). `.containerignore` keeps `.env`, `runtime/` and `.venv`
+out of the image.
+
+## Version and updates
+
+**About** (public) shows the running Inspector version and build, the installed k9-aif, the latest k9-aif on PyPI,
+the rule count and the last update's result (also on `/api/health` and `/api/about`).
+
+**Update** (any signed-in user, demo included) is pull-based and idempotent:
+
+- The container never updates itself. The button only writes `runtime/update/request.json`, and only when the build
+  commit or the installed k9-aif is behind; otherwise it answers "Already up to date".
+- On the host, a systemd path unit sees the file and runs `ubuntu/update.sh`: re-check (no-op if current),
+  `git pull --ff-only`, tag the running image `:previous`, build, restart, health check; an unhealthy build is rolled
+  back to `:previous`. A failed build leaves the old container running.
+- Outbound calls only (GitHub, PyPI); nothing outside the host reaches in. One update at a time (lock), 10 minutes
+  between requests, a run left "running" by a crash is cleared.
+- Install once on the host: `ubuntu/build-run.sh install-updater` (remove: `uninstall-updater`). By hand:
+  `ubuntu/build-run.sh update`. Log: `runtime/update/update.log` (admins see it on About).
 
 ## GitHub webhook
 

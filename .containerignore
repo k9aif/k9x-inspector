@@ -1,0 +1,11 @@
+# Never in the image: secrets come from --env-file at run time; runtime/ is a mounted volume.
+.env
+.env.*
+!.env.example
+runtime/
+.venv/
+.git/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+tests/

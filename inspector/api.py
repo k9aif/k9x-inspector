@@ -2,13 +2,15 @@
 # K9-AIF Framework
 """K9X Inspector web API and UI.
 
-Everything except /api/health, /api/public, the sign-in page, the About page,
-its assets and the GitHub webhook needs a login from .env: the admin
+Everything except /api/health, /api/public, /api/about, the sign-in page, the
+About page, its assets and the GitHub webhook needs a login from .env: the admin
 (INSPECTOR_USER / INSPECTOR_PASSWORD) or the read-only demo viewer
 (INSPECTOR_DEMO_USER / INSPECTOR_DEMO_PASSWORD). Viewers can read every report
 and start inspections of tracked applications or public GitHub repositories
 (rate-limited); only the admin changes the tracked list or inspects a server
 folder. The webhook is authenticated by GitHub's HMAC signature instead.
+Any signed-in user may ask for an update (/api/update): it only writes a
+request for the host's updater, and only when something is newer.
 """
 
 from __future__ import annotations
@@ -27,7 +29,7 @@ from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Red
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import BaseModel
 
-from inspector import auth, guidelines, repos, runner, store
+from inspector import auth, guidelines, repos, runner, store, updates
 from inspector.settings import (REPO_URL, AppSpec, allow_local, credentials, demo_credentials,
                                 public_inspect_per_hour, schedule, webhook_secret)
 
@@ -94,7 +96,13 @@ def _startup() -> None:
 # ── public ────────────────────────────────────────────────────────────────────
 @app.get("/api/health")
 def health():
-    return {"ok": True}
+    return {"ok": True, **updates.build_info(), "k9_aif": updates.framework_installed()}
+
+
+@app.get("/api/about")
+def about_info():
+    """Versions (running vs latest) and the host updater's state; public, like the About page."""
+    return {**updates.check(), "update": updates.status()}
 
 
 @app.get("/api/public")
@@ -254,6 +262,19 @@ def run_schedule_now(user: str = Depends(admin)):
 
 
 # ── GitHub webhook ────────────────────────────────────────────────────────────
+@app.post("/api/update")
+def request_update(user: str = Depends(login)):
+    """Any signed-in user (demo included): no-op when up to date; otherwise the host updater rebuilds."""
+    out = updates.request(user)
+    log.info("update request by %s: %s", user, out["result"])
+    return out
+
+
+@app.get("/api/update/log", response_class=PlainTextResponse)
+def update_log(user: str = Depends(admin)):
+    return updates.log_tail()
+
+
 @app.post("/api/webhook/github")
 async def github_webhook(request: Request):
     secret = webhook_secret()

@@ -6,9 +6,17 @@ USER root
 RUN dnf install -y git && dnf clean all
 WORKDIR /app
 COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir -r requirements.txt
+# K9AIF_LATEST (the latest k9-aif on PyPI, passed by build-run.sh) busts this layer's cache when a new
+# framework release exists, so a rebuild always installs it; otherwise the cached layer is reused.
+ARG K9AIF_LATEST=unknown
+RUN echo "k9-aif latest on PyPI: ${K9AIF_LATEST}" \
+ && pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir --upgrade -r requirements.txt
 COPY . .
 RUN mkdir -p /app/runtime && chown -R 1001:0 /app/runtime && chmod -R g+rwX /app/runtime
+# Build identity for About and /api/health (the image has no .git). Last, so only this layer changes per build.
+ARG INSPECTOR_COMMIT=unknown
+ARG INSPECTOR_BUILT=unknown
+ENV INSPECTOR_COMMIT=${INSPECTOR_COMMIT} INSPECTOR_BUILT=${INSPECTOR_BUILT}
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
     INSPECTOR_DB_PATH=/app/runtime/inspector.db INSPECTOR_WORKDIR=/app/runtime/repos
 EXPOSE 8115
