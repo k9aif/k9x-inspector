@@ -146,8 +146,9 @@ def _write(name: str, data: Dict[str, Any]) -> None:
 
 def status() -> Dict[str, Any]:
     """The host updater's state, plus a pending request the host has not yet taken."""
-    out = {"updater_installed": bool(_read("updater.json")), "last": _read("status.json") or None,
-           "pending": None}
+    marker = _read("updater.json")
+    out = {"updater_installed": bool(marker), "updater_installed_at": marker.get("installed_at"),
+           "last": _read("status.json") or None, "pending": None}
     req = _read("request.json")
     if req:
         age = time.time() - float(req.get("at", 0))

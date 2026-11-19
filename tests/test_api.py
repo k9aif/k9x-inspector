@@ -171,6 +171,7 @@ def test_health_and_about_show_versions(client, upd):
     client.cookies.clear()
     a = client.get("/api/about").json()                     # public, like the About page
     assert a["k9_aif"] == "1.30.0" and a["update_available"] is False and a["rules"] > 0
+    assert a["update"]["updater_installed"] is True and a["update"]["updater_installed_at"] == 1
 
 
 def test_update_needs_sign_in(client, upd):

@@ -41,7 +41,7 @@
       <tr><td>k9-aif installed</td><td id="v-fw">…</td></tr>
       <tr><td>k9-aif latest (PyPI)</td><td id="v-latest">…</td></tr>
       <tr><td>Inspection rules</td><td id="v-rules">…</td></tr>
-      <tr><td>Last update</td><td id="v-last">…</td></tr>
+      <tr><td>Updater</td><td id="v-last">…</td></tr>
     </table>
     <div class="row">
       <button id="ubtn" type="button" disabled>Check for updates</button>
@@ -99,13 +99,18 @@
 const $ = id => document.getElementById(id);
 let signedIn = false, isAdmin = false, startCommit = null, startFw = null, polling = null;
 
+function when(t) {
+  return new Date(t * 1000).toLocaleString(undefined, {day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'});
+}
+
 function fmtLast(u) {
   const p = u.pending, l = u.last;
-  if (!u.updater_installed) return 'Updater not installed on this host';
+  if (!u.updater_installed) return 'Not installed on this host';
   if (p) return p.stuck ? `Requested ${Math.round(p.age_s / 60)} min ago, not picked up: is the host updater running?`
                         : `Requested by ${p.user}; waiting for the host`;
-  if (!l) return 'Never';
-  return `${l.state.replace('_', ' ')}: ${l.message || ''} (${new Date(l.at * 1000).toLocaleString()})`;
+  if (l && l.state === 'running') return `${l.message || 'Updating'}…`;
+  if (l) return `${l.message || l.state} (${when(l.at)})`;
+  return u.updater_installed_at ? `Installed ${when(u.updater_installed_at)}; no update needed yet` : 'Installed; no update needed yet';
 }
 
 async function load() {
