@@ -77,7 +77,10 @@ def _row(r) -> Dict[str, Any]:
     d = dict(r._mapping)
     for k in ("started_at", "finished_at", "created_at"):
         if d.get(k):
-            d[k] = d[k].isoformat()
+            t = d[k]
+            if t.tzinfo is None:          # SQLite drops the offset; every value was written as UTC (now())
+                t = t.replace(tzinfo=timezone.utc)
+            d[k] = t.isoformat()          # "+00:00": the browser shows the viewer's local time
     for k in ("counts", "framework"):
         if d.get(k):
             d[k] = json.loads(d[k])

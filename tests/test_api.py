@@ -248,3 +248,11 @@ def test_update_log_is_admin_only(client, upd):
     assert client.get("/api/update/log").status_code == 403
     signin(client, "admin", "admin-test-pw")
     assert "line2" in client.get("/api/update/log").text
+
+
+def test_times_carry_utc_so_the_browser_shows_local_time(client):
+    """SQLite returns naive datetimes; without an offset a browser reads UTC as local (5 h off in Atlanta)."""
+    from inspector import store
+    iid = store.start_inspection("x", "manual")
+    assert store.get_inspection(iid)["started_at"].endswith("+00:00")
+    assert all(i["started_at"].endswith("+00:00") for i in store.list_inspections())
