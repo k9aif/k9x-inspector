@@ -348,7 +348,8 @@ def login_page(user: Optional[str] = Depends(current_user)):
 
 @app.get("/about")
 def about():
-    return FileResponse(WEB / "about.html")
+    # Changes with each release (version panel): never serve a cached copy.
+    return FileResponse(WEB / "about.html", headers={"Cache-Control": "no-cache"})
 
 
 @app.get("/static/{name}")
