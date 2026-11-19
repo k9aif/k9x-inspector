@@ -19,6 +19,7 @@ import hashlib
 import hmac
 import json
 import logging
+import re
 import threading
 import time
 from pathlib import Path
@@ -125,9 +126,33 @@ def status(user: str = Depends(login)):
             "webhook": bool(webhook_secret()), "latest_framework": runner.latest_framework()}
 
 
+def current_framework(fw: Optional[dict], latest: str) -> Optional[dict]:
+    """An inspection's framework status judged against today's latest k9-aif, not the one known when it ran.
+
+    A report stores what was latest at inspection time; on the Applications page that went stale with every
+    release (DAS showed "up to date · latest 1.18.1" while 1.31.0 was out).
+    """
+    if not fw or not latest or latest == "unknown":
+        return fw
+    from k9_aif_abb.k9_inspect.rules.config_rules import older
+    fw = {**fw, "latest": latest}
+    if fw.get("status") in ("current", "outdated", "floor-behind") and fw.get("version"):
+        m = re.search(r"(==|~=|<=|>=|<|>)", fw.get("declared") or "")
+        op = m.group(1) if m else ">="
+        if older(fw["version"], latest):
+            fw["status"] = "outdated" if op in ("==", "<", "<=", "~=") else "floor-behind"
+        else:
+            fw["status"] = "current"
+    return fw
+
+
 @app.get("/api/apps")
 def apps(user: str = Depends(login)):
-    return store.list_apps()
+    out, latest = store.list_apps(), runner.latest_framework()
+    for a in out:
+        if a.get("latest"):
+            a["latest"] = {**a["latest"], "framework": current_framework(a["latest"].get("framework"), latest)}
+    return out
 
 
 @app.get("/api/inspections")

@@ -256,3 +256,15 @@ def test_times_carry_utc_so_the_browser_shows_local_time(client):
     iid = store.start_inspection("x", "manual")
     assert store.get_inspection(iid)["started_at"].endswith("+00:00")
     assert all(i["started_at"].endswith("+00:00") for i in store.list_inspections())
+
+
+def test_framework_status_is_judged_against_todays_latest():
+    from inspector.api import current_framework
+    pinned = {"declared": "k9-aif[s3,docling]==1.18.1", "version": "1.18.1", "status": "current", "latest": "1.18.1"}
+    assert current_framework(pinned, "1.31.0")["status"] == "outdated"
+    floor = {"declared": "k9-aif>=1.26.1", "version": "1.26.1", "status": "current", "latest": "1.26.1"}
+    assert current_framework(floor, "1.31.0")["status"] == "floor-behind"
+    assert current_framework({**floor, "version": "1.31.0"}, "1.31.0")["status"] == "current"
+    bundled = {"declared": "bundled with k9-aif 1.15.0", "version": "1.15.0", "status": "bundled", "latest": "1.15.0"}
+    assert current_framework(bundled, "1.31.0") == {**bundled, "latest": "1.31.0"}
+    assert current_framework(pinned, "unknown") is pinned
