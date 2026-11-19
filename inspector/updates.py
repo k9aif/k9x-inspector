@@ -159,19 +159,20 @@ def request(user: str) -> Dict[str, Any]:
     """Ask the host for an update. Returns {"result": ..., "message": ...}; never builds anything itself."""
     with _lock:
         st = status()
+        info = check()
+        if info["update_available"] is False:          # nothing newer: no host involved, updater or not
+            return {"result": "up_to_date",
+                    "message": f"Already up to date: Inspector {info['version']} ({info['commit']}), "
+                               f"k9-aif {info['k9_aif']}."}
         if not st["updater_installed"]:
             return {"result": "no_updater",
-                    "message": "The updater is not installed on this host (ubuntu/build-run.sh install-updater)."}
+                    "message": "An update is available, but the updater is not installed on this host "
+                               "(ubuntu/build-run.sh install-updater)."}
         last = st["last"] or {}
         if last.get("state") == "running" and time.time() - float(last.get("at", 0)) < STALE_RUN_S:
             return {"result": "running", "message": last.get("message") or "An update is already running."}
         if st["pending"] and not st["pending"]["stuck"]:
             return {"result": "pending", "message": "An update was already requested; the host is picking it up."}
-        info = check()
-        if info["update_available"] is False:
-            return {"result": "up_to_date",
-                    "message": f"Already up to date: Inspector {info['version']} ({info['commit']}), "
-                               f"k9-aif {info['k9_aif']}."}
         last_req = _read("last_request.json")
         wait = COOLDOWN_S - (time.time() - float(last_req.get("at", 0)))
         if wait > 0:

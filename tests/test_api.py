@@ -223,6 +223,13 @@ def test_running_update_blocks_and_stale_running_does_not(client, upd):
     assert client.post("/api/update").json()["result"] == "requested"
 
 
+def test_up_to_date_answers_even_without_the_updater(client, upd):
+    folder, _ = upd
+    (folder / "updater.json").unlink()
+    signin(client, "demo", "demo")
+    assert client.post("/api/update").json()["result"] == "up_to_date"
+
+
 def test_no_updater_installed_is_said_not_hidden(client, upd):
     folder, state = upd
     (folder / "updater.json").unlink()
